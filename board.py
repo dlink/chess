@@ -8,12 +8,15 @@ STANDARD = 'data/standard.board'
 class Board(object):
 
     def __init__(self):
+        '''Create the board matrix
+           Create the pieces and add them to the board
+        '''
         self.matrix= [[None for j in range(0, 8)] for i in range(0, 8)]
-
         self.setup()
 
     def setup(self, setup_data=STANDARD):
-        '''Set up the pieces on the board'''
+        '''Set up the pieces on the board
+        '''
         for row in open(setup_data).readlines():
             row = row.strip()
             p, pos = row.split('-')
@@ -30,6 +33,9 @@ class Board(object):
         self.matrix[row][file] = piece
 
     def display(self):
+        '''Generate and return an ascii representation of the board
+           in its current state, as a multiline string.
+        '''
         o = ''
         o += '    a   b   c   d   e   f   g   h\n'
         o += '  ╔═══' + '╤═══' * 7 + '╗\n'
@@ -44,7 +50,6 @@ class Board(object):
             else:
                 o += '  ╚═══' + '╧═══' * 7 + '╝\n'
                 o += '    a   b   c   d   e   f   g   h\n'
-                
         return o
 
 if __name__ == '__main__':

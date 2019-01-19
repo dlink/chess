@@ -7,6 +7,8 @@
 class PiecesError(Exception): pass
 
 class Pieces(object):
+    '''Preside of Pieces Objects
+    '''
 
     @staticmethod
     def getPiece(p):
@@ -31,6 +33,8 @@ class Pieces(object):
 class PieceError(Exception): pass
 
 class Piece(object):
+    '''Super class for all pieces
+    '''
     def __init__(self, color):
         if color not in ('w', 'b'):
             raise PiecesError('Unrecognized color: %s' % color)
