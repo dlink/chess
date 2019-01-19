@@ -31,17 +31,20 @@ class Board(object):
 
     def display(self):
         o = ''
-        o += '╔═══' + '╤═══' * 7 + '╗\n'
+        o += '    a   b   c   d   e   f   g   h\n'
+        o += '  ╔═══' + '╤═══' * 7 + '╗\n'
         for i, row in enumerate(reversed(self.matrix)):
 
-            o += '║'
+            o += '%s ║' % (8-i)
             o += '│'.join(' %s ' % (p if p else ' ') for p in row)
-            o += '║\n'
+            o += '║ %s\n' % (8-i)
 
             if i < 7:
-                o += '╟───' + '┼───' * 7 + '╢\n'
+                o += '  ╟───' + '┼───' * 7 + '╢\n'
             else:
-                o += '╚═══' + '╧═══' * 7 + '╝\n'
+                o += '  ╚═══' + '╧═══' * 7 + '╝\n'
+                o += '    a   b   c   d   e   f   g   h\n'
+                
         return o
 
 if __name__ == '__main__':
