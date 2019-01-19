@@ -44,5 +44,5 @@ class Board(object):
                 o += '╚═══' + '╧═══' * 7 + '╝\n'
         return o
 
-if __init__ == '__name__':
+if __name__ == '__main__':
     print Board().display()
