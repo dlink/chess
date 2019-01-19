@@ -1,3 +1,16 @@
+class Pieces(object):
+    
+    @staticmethod
+    def getPiece(p):
+        if p == 'p':
+            return Pawn()
+        elif p == 'r':
+            return Rook()
+        elif p == 'n':
+            return Knight()
+        else:
+            raise PiecesError('Unrecognzied piece abbreviation: %s' % p)
+
 class Piece(object):
     def __init__(self):
         pass
