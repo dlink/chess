@@ -47,13 +47,21 @@ class Piece(object):
     def possibleMoves(self):
         'test case: move forward one'
         c = self.position.move(self.color, 'f1')
+
         return c
 
 class Pawn(Piece):
     char = 'p'
     value = 1
-    moves = ['f1', 'f2']
-    # to do: restrict f2 movements to rows 2 and 7
+
+    @property
+    def moves(self):
+        _moves = ['f1']
+        if (self.color == 'w' and self.position[1] == '2') or \
+           (self.color == 'b' and self.position[1] == '7'):
+            _moves.append('f2')
+        return _moves
+
     # to do: build custom capture logic
 
 class Knight(Piece):
@@ -85,4 +93,3 @@ class King(Piece):
     value = None
     moves = ['f1', 'b1', 'l1', 'r1',
              'd1', 'e1', 'g1', 'h1']
-
