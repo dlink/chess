@@ -117,6 +117,24 @@ class Board(object):
             elif direction == 'h':
                 x2 = x + vdist; y2 = y - vdist
 
+            # knight L-move
+            elif direction == 'i':
+                x2 = x - vdist*2; y2 = y + vdist
+            elif direction == 'j':
+                x2 = x - vdist; y2 = y + vdist*2
+            elif direction == 'k':
+                x2 = x + vdist; y2 = y + vdist*2
+            elif direction == 'm':
+                x2 = x + vdist*2; y2 = y + vdist
+            elif direction == 'n':
+                x2 = x + vdist*2; y2 = y - vdist
+            elif direction == 'o':
+                x2 = x + vdist; y2 = y - vdist*2
+            elif direction == 'p':
+                x2 = x - vdist; y2 = y - vdist*2
+            elif direction == 'q':
+                x2 = x - vdist*2; y2 = y - vdist
+
             else:
                 raise BoardError('unknown movment direction: %s' % direction)
             # off the board:

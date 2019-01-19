@@ -80,15 +80,7 @@ class Knight(Piece):
     char = 'n'
     value = 3
     glyphs = ['♘', '♞']
-    '''
-    knight move need work
-    moves = ['f2,l1', 'f2,r1',
-             'l2,f1', 'l2,b1',
-             'b2,l1', 'b2,r1',
-             'r2,f1', 'r2,b1']
-    use rooks for now
-    '''
-    moves =['f*', 'b*', 'l*', 'r*']
+    moves = ['i1','j1','k1','m1','n1','o1','p1','q1']
 
 class Bishop(Piece):
     char = 'b'
