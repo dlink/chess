@@ -25,6 +25,7 @@ class Board(object):
         '''
         self.matrix= [[None for j in range(0, 8)] for i in range(0, 8)]
         self.pieces = []
+        self.captured = []
         self.setup()
         self.display = BoardDisplay(self)
 
@@ -49,13 +50,36 @@ class Board(object):
         return self.matrix[y][x]
 
     def placePiece(self, piece, position):
-        '''Place a piece at a position on the board
+        '''Place a piece on the board at a given position
              piece is a Piece Object
              position is a str coordinate, eq.: a1
         '''
         x,y = position2xy(position)
         self.matrix[y][x] = piece
         piece.position = position
+        return piece
+
+    def movePiece(self, piece, position):
+        '''Move a piece on the board to a given position
+           confirm move is valid
+           perform captures if applicable
+        '''
+        if position not in self.possibleMoves(piece):
+            raise BoardError('Invalid Move: %s can not move to %s' %
+                             (piece, position))
+        # remove piece from the board
+        x,y = position2xy(piece.position)
+        self.matrix[y][x] = None
+
+        # check capture
+        x,y = position2xy(position)
+        if self.matrix[y][x]:
+            self.captured.append(self.matrix[y][x])
+
+        # place piece
+        self.matrix[y][x] = piece
+        piece.position = position
+        return piece
 
     def possibleMoves(self, piece):
         '''Given a piece on the board
@@ -137,6 +161,7 @@ class Board(object):
 
             else:
                 raise BoardError('unknown movment direction: %s' % direction)
+
             # off the board:
             if y2 not in range(0, 8) or x2 not in range(0, 8):
                 break
@@ -145,8 +170,10 @@ class Board(object):
             new_position = xy2position(x2, y2)
             piece2 = self.getPiece(new_position)
             if piece2:
+                # opponents piece?
                 if piece2.color != piece.color:
                     new_positions.append(new_position)
+                # your piece?
                 break
 
             new_positions.append(new_position)

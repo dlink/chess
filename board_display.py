@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 class BoardDisplay(object):
-    
+
     def __init__(self, board):
         self.board = board
-        
+
     def one_line(self):
         '''Return a representation of the board in one line
            RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr
@@ -28,7 +28,15 @@ class BoardDisplay(object):
         '''
         o = ''
         for i, row in enumerate(reversed(self.board.matrix)):
-            o += ' '.join('%s' % (p.glyph if p else '.') for p in row) + '\n'
+            o += ' '.join('%s' % (p.glyph if p else '.') for p in row)
+            if i == 0:
+                o += '   '+ ''.join([p.glyph for p in self.board.captured
+                                     if p.color == 'w']) + '\n'
+            elif i == 7:
+                o += '   '+ ''.join([p.glyph for p in self.board.captured
+                                     if p.color == 'b']) + '\n'
+            else:
+                o += '\n'
         return o
 
     def standard(self):
@@ -60,15 +68,25 @@ class BoardDisplay(object):
         o += '  ╔═══' + '╤═══' * 7 + '╗\n'
         for i, row in enumerate(reversed(self.board.matrix)):
 
+            # row with pieces
             o += '%s ║' % (8-i)
             o += '│'.join(' %s ' % (p.char_glyph if p else ' ') for p in row)
-            o += '║ %s\n' % (8-i)
+            o += '║ %s' % (8-i)
 
+            # show captured pieces
+            if i == 1:
+                o += '   '+ ''.join([p.char_glyph for p in self.board.captured
+                                     if p.color == 'w']) + '\n'
+            elif i == 7:
+                o += '   '+ ''.join([p.char_glyph for p in self.board.captured
+                                     if p.color == 'b']) + '\n'
+            else:
+                o += '\n'
+
+            # row between pieces
             if i < 7:
                 o += '  ╟───' + '┼───' * 7 + '╢\n'
             else:
-                o += '  ╚═══' + '╧═══' * 7 + '╝\n'
+                o += '  ╚═══' + '╧═══' * 7 + '╝ \n'
                 o += '    a   b   c   d   e   f   g   h\n'
         return o
-
-
