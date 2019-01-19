@@ -37,7 +37,7 @@ class BoardDisplay(object):
                                      if p.color == 'b']) + '\n'
             else:
                 o += '\n'
-        return o
+        return o.strip()
 
     def standard(self):
         '''Return an ASCII representation of the board with boarders
@@ -70,15 +70,15 @@ class BoardDisplay(object):
 
             # row with pieces
             o += '%s ║' % (8-i)
-            o += '│'.join(' %s ' % (p.char_glyph if p else ' ') for p in row)
+            o += '│'.join(' %s ' % (p.glyph if p else ' ') for p in row)
             o += '║ %s' % (8-i)
 
             # show captured pieces
             if i == 1:
-                o += '   '+ ''.join([p.char_glyph for p in self.board.captured
+                o += '   '+ ''.join([p.glyph for p in self.board.captured
                                      if p.color == 'w']) + '\n'
             elif i == 7:
-                o += '   '+ ''.join([p.char_glyph for p in self.board.captured
+                o += '   '+ ''.join([p.glyph for p in self.board.captured
                                      if p.color == 'b']) + '\n'
             else:
                 o += '\n'

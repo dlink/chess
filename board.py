@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from pieces import Pieces
+from pieces import Pieces, Queen
 from board_display import BoardDisplay
 
 STANDARD = 'data/standard.board'
@@ -19,10 +19,11 @@ class BoardError(Exception): pass
 
 class Board(object):
 
-    def __init__(self):
+    def __init__(self, setup_data=STANDARD):
         '''Create the board matrix
            Create the pieces sand add them to the board
         '''
+        self.setup_data = setup_data
         self.matrix= [[None for j in range(0, 8)] for i in range(0, 8)]
         self.pieces = []
         self.captured = []
@@ -32,10 +33,10 @@ class Board(object):
     def __repr__(self):
         return self.display.one_line()
 
-    def setup(self, setup_data=STANDARD):
+    def setup(self):
         '''Set up the pieces on the board based in input file
         '''
-        for row in open(setup_data).readlines():
+        for row in open(self.setup_data).readlines():
             row = row.strip()
 
             # eq.: k-e1
@@ -63,6 +64,7 @@ class Board(object):
         '''Move a piece on the board to a given position
            confirm move is valid
            perform captures if applicable
+           promote pawns
         '''
         if position not in self.possibleMoves(piece):
             raise BoardError('Invalid Move: %s can not move to %s' %
@@ -75,6 +77,14 @@ class Board(object):
         x,y = position2xy(position)
         if self.matrix[y][x]:
             self.captured.append(self.matrix[y][x])
+
+        # promote pawns
+        if piece.char == 'p':
+            if (piece.color == 'w' and position[1] == '8') or \
+               (piece.color == 'b' and position[1] == '1'):
+                ind = self.pieces.index(piece)
+                piece = Queen(piece.color)
+                self.pieces[ind] = piece
 
         # place piece
         self.matrix[y][x] = piece
