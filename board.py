@@ -37,14 +37,12 @@ class Board(object):
             o += '║'
             o += '│'.join(' %s ' % (p if p else ' ') for p in row)
             o += '║\n'
-            
+
             if i < 7:
                 o += '╟───' + '┼───' * 7 + '╢\n'
             else:
                 o += '╚═══' + '╧═══' * 7 + '╝\n'
         return o
 
-    
-print Board().display()
-
-                
+if __init__ == '__name__':
+    print Board().display()
