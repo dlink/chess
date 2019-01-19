@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
-from pieces import Pieces, Pawn, Rook, Knight
+from pieces import Pieces
+from board_display import BoardDisplay
 
 STANDARD = 'data/standard.board'
 
@@ -21,14 +21,15 @@ class Board(object):
 
     def __init__(self):
         '''Create the board matrix
-           Create the pieces and add them to the board
+           Create the pieces sand add them to the board
         '''
         self.matrix= [[None for j in range(0, 8)] for i in range(0, 8)]
         self.pieces = []
         self.setup()
+        self.display = BoardDisplay(self)
 
     def __repr__(self):
-        return self.one_line_display()
+        return self.display.one_line()
 
     def setup(self, setup_data=STANDARD):
         '''Set up the pieces on the board based in input file
@@ -96,76 +97,8 @@ class Board(object):
         coord2 = xy2coord(x, y2)
         return coord2
 
-
-    def one_line_display(self):
-        '''Return a representation of the board in one line
-           RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr
-        '''
-        o = ''
-        for i, row in enumerate(reversed(self.matrix)):
-            o += ''.join('%s' % (p if p else '.') for p in row)
-        return o
-
-    def simple_display(self):
-        '''Return a simple representation of the board as text
-
-           R N B Q K B N R
-           P P P P P P P P
-           . . . . . . . .
-           . . . . . . . .
-           . . . . . . . .
-           . . . . . . . .
-           p p p p p p p p
-           r n b q k b n r
-        '''
-        o = ''
-        for i, row in enumerate(reversed(self.matrix)):
-            o += ' '.join('%s' % (p if p else '.') for p in row) + '\n'
-        return o
-
-    def display(self):
-        '''Return an ASCII representation of the board with boarders
-           and row and file labels as text
-
-               a   b   c   d   e   f   g   h
-             ╔═══╤═══╤═══╤═══╤═══╤═══╤═══╤═══╗
-           8 ║ R │ N │ B │ Q │ K │ B │ N │ R ║ 8
-             ╟───┼───┼───┼───┼───┼───┼───┼───╢
-           7 ║ P │ P │ P │ P │ P │ P │ P │ P ║ 7
-             ╟───┼───┼───┼───┼───┼───┼───┼───╢
-           6 ║   │   │   │   │   │   │   │   ║ 6
-             ╟───┼───┼───┼───┼───┼───┼───┼───╢
-           5 ║   │   │   │   │   │   │   │   ║ 5
-             ╟───┼───┼───┼───┼───┼───┼───┼───╢
-           4 ║   │   │   │   │   │   │   │   ║ 4
-             ╟───┼───┼───┼───┼───┼───┼───┼───╢
-           3 ║   │   │   │   │   │   │   │   ║ 3
-             ╟───┼───┼───┼───┼───┼───┼───┼───╢
-           2 ║ p │ p │ p │ p │ p │ p │ p │ p ║ 2
-             ╟───┼───┼───┼───┼───┼───┼───┼───╢
-           1 ║ r │ n │ b │ q │ k │ b │ n │ r ║ 1
-             ╚═══╧═══╧═══╧═══╧═══╧═══╧═══╧═══╝
-               a   b   c   d   e   f   g   h
-        '''
-        o = ''
-        o += '    a   b   c   d   e   f   g   h\n'
-        o += '  ╔═══' + '╤═══' * 7 + '╗\n'
-        for i, row in enumerate(reversed(self.matrix)):
-
-            o += '%s ║' % (8-i)
-            o += '│'.join(' %s ' % (p if p else ' ') for p in row)
-            o += '║ %s\n' % (8-i)
-
-            if i < 7:
-                o += '  ╟───' + '┼───' * 7 + '╢\n'
-            else:
-                o += '  ╚═══' + '╧═══' * 7 + '╝\n'
-                o += '    a   b   c   d   e   f   g   h\n'
-        return o
-
-
 if __name__ == '__main__':
     board = Board()
-    #print board.one_line_display()
-    #print board.simple_display()
-    print board.ascii_display()
+    print board.display.one_line()
+    print board.display.simple()
+    print board.display.standard()
