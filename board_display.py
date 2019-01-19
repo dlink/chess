@@ -11,7 +11,7 @@ class BoardDisplay(object):
         '''
         o = ''
         for i, row in enumerate(reversed(self.board.matrix)):
-            o += ''.join('%s' % (p if p else '.') for p in row)
+            o += ''.join('%s' % (p.char_glyph if p else '.') for p in row)
         return o
 
     def simple(self):
@@ -28,7 +28,7 @@ class BoardDisplay(object):
         '''
         o = ''
         for i, row in enumerate(reversed(self.board.matrix)):
-            o += ' '.join('%s' % (p if p else '.') for p in row) + '\n'
+            o += ' '.join('%s' % (p.glyph if p else '.') for p in row) + '\n'
         return o
 
     def standard(self):
@@ -61,7 +61,7 @@ class BoardDisplay(object):
         for i, row in enumerate(reversed(self.board.matrix)):
 
             o += '%s ║' % (8-i)
-            o += '│'.join(' %s ' % (p if p else ' ') for p in row)
+            o += '│'.join(' %s ' % (p.char_glyph if p else ' ') for p in row)
             o += '║ %s\n' % (8-i)
 
             if i < 7:

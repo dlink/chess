@@ -42,7 +42,18 @@ class Piece(object):
         self.postion = None
 
     def __repr__(self):
+        return '%s-%s' %(self.char if self.color == 'w' else self.char.upper(),
+                         self.position)
+    @property
+    def char_glyph(self):
         return self.char if self.color == 'w' else self.char.upper()
+
+    @property
+    def glyph(self):
+        if self.color == 'w':
+            return self.glyphs[0]
+        else:
+            return self.glyphs[1]
 
     def possibleMoves(self):
         'test case: move forward one'
@@ -53,6 +64,7 @@ class Piece(object):
 class Pawn(Piece):
     char = 'p'
     value = 1
+    glyphs = ['♙', '♟']
 
     @property
     def moves(self):
@@ -67,6 +79,7 @@ class Pawn(Piece):
 class Knight(Piece):
     char = 'n'
     value = 3
+    glyphs = ['♘', '♞']
     moves = ['f2,l1', 'f2,r1',
              'l2,f1', 'l2,b1',
              'b2,l1', 'b2,r1',
@@ -75,21 +88,25 @@ class Knight(Piece):
 class Bishop(Piece):
     char = 'b'
     value = 3
+    glyphs = ['♗', '♝']
     moves = ['d*', 'e*', 'g*', 'h*']
 
 class Rook(Piece):
     char = 'r'
     value = 5
+    glyphs = ['♖', '♜']
     moves =['f*', 'b*', 'l*', 'r*']
 
 class Queen(Piece):
     char = 'q'
     value = 9
+    glyphs = ['♕', '♛']
     moves = ['f*', 'b*', 'l*', 'r*',
              'd*', 'e*', 'g*', 'h*']
 
 class King(Piece):
     char = 'k'
     value = None
+    glyphs = ['♔', '♚']
     moves = ['f1', 'b1', 'l1', 'r1',
              'd1', 'e1', 'g1', 'h1']
