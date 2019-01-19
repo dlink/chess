@@ -14,4 +14,7 @@ if __name__ == '__main__':
     print game.state
     print ['%s%s' % (p.char, p.position) for p in game.board.pieces]
     p1 = game.board.pieces[10]
-    print 'p1:', p1, p1.position, game.board.possibleMoves(p1)
+    print
+    for i, p in enumerate(game.board.pieces):
+        print '%s.' % (i+1), p, game.board.possibleMoves(p)
+        

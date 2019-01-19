@@ -5,7 +5,7 @@ from board_display import BoardDisplay
 
 STANDARD = 'data/standard.board'
 
-def xy2coord(x, y):
+def xy2position(x, y):
     file_ = y+1
     row = chr(x+97)
     return '%s%s' % (row, file_)
@@ -44,8 +44,8 @@ class Board(object):
             self.placePiece(piece, position)
             self.pieces.append(piece)
 
-    def getPiece(self, coord):
-        x, y = position2xy(coord)
+    def getPiece(self, position):
+        x, y = position2xy(position)
         return self.matrix[y][x]
 
     def placePiece(self, piece, position):
@@ -61,18 +61,20 @@ class Board(object):
         '''Given a piece on the board
            Return a list of possible positions it can move to
         '''
+        #print 'possibleMoves(%s)' % piece
         if not piece:
             return []
 
         possibilities = []
         for move in piece.moves:
-            coord2 = self.getMoveDestination(piece, move)
-            if not coord2:
+            new_positions = self.getMoveDestination(piece, move)
+            if not new_positions:
                 continue
-            piece2 = self.getPiece(coord2)
-            if piece2 and piece2.color == piece.color:
-                continue
-            possibilities.append(coord2)
+            for new_position in new_positions:
+                piece2 = self.getPiece(new_position)
+                if piece2 and piece2.color == piece.color:
+                    continue
+                possibilities.append(new_position)
         return possibilities
 
     def getMoveDestination(self, piece, move):
@@ -80,22 +82,58 @@ class Board(object):
            Return the destination postion after the move
              or None if the move is not possible.
         '''
+        #print 'getMoveDestination(%s, %s)' % (piece, move)
+
         x,y = position2xy(piece.position)
         direction, dist = move
 
-        # hack
-        if dist == '*':
-            dist = '1'
+        x2 = x
+        y2 = y
 
-        dist = int(dist)
+        new_positions = []
         vector = 1 if piece.color == 'w' else -1
-        if direction == 'f':
-            y2 = y + (vector * dist)
-        else:
-            return None
-            #raise BoardError('unkonwn movment direction: %s' % direction)
-        coord2 = xy2coord(x, y2)
-        return coord2
+        dists = range(1,8) if dist == '*' else [int(dist)]
+        for d in dists:
+            vdist = vector * d
+            # orthonal movements
+            if direction == 'f':
+                y2 = y + vdist
+            elif direction == 'b':
+                y2 = y - vdist
+            elif direction == 'l':
+                x2 = x - vdist
+            elif direction == 'l':
+                x2 = x - vdist
+            elif direction == 'r':
+                x2 = x + vdist
+
+            # diagonal movements
+            elif direction == 'd':
+                x2 = x - vdist; y2 = y + vdist
+            elif direction == 'e':
+                x2 = x + vdist; y2 = y + vdist
+            elif direction == 'g':
+                x2 = x - vdist; y2 = y - vdist
+            elif direction == 'h':
+                x2 = x + vdist; y2 = y - vdist
+
+            else:
+                raise BoardError('unknown movment direction: %s' % direction)
+            # off the board:
+            if y2 not in range(0, 8) or x2 not in range(0, 8):
+                break
+
+            # piece there?
+            new_position = xy2position(x2, y2)
+            piece2 = self.getPiece(new_position)
+            if piece2:
+                if piece2.color != piece.color:
+                    new_positions.append(new_position)
+                break
+
+            new_positions.append(new_position)
+
+        return new_positions
 
 if __name__ == '__main__':
     board = Board()
