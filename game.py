@@ -87,8 +87,7 @@ class Game(object):
         return piece
 
     def randomMove(self, color):
-        pieces = [p for p in self.board.pieces
-                  if p.color == color and p.position != 'x']
+        pieces = self.board.getActivePieces(color)
         possible_moves = None
         moveable_piece_found = 0
         while not moveable_piece_found:

@@ -63,6 +63,10 @@ class Board(object):
                 return piece
         return None
 
+    def getActivePieces(self, color):
+        return [p for p in self.pieces
+                if p.color == color and p.position != 'x']
+    
     def placePiece(self, piece, position):
         '''Place a piece on the board at a given position
              piece is a Piece Object
@@ -143,9 +147,7 @@ class Board(object):
                 # Can they capture your king?
                 king = hypo_board.getPiece('k', hypo_piece.color)
                 puts_you_in_check = 0
-                for p in hypo_board.pieces:
-                    if p.color != hypo_piece.opposite_color or p.position=='x':
-                        continue
+                for p in hypo_board.getActivePieces(hypo_piece.opposite_color):
                     hypo_possibilities = hypo_board.possibleMoves(
                         p, check_check=0)
                     if king.position in hypo_possibilities:
