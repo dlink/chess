@@ -37,6 +37,7 @@ class BoardDisplay(object):
                                      if p.color == 'b']) + '\n'
             else:
                 o += '\n'
+        o += 'a b c d e f g h'
         return o.strip()
 
     def standard(self):

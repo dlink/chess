@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from copy import deepcopy
+
 from pieces import Pieces, Queen
 from board_display import BoardDisplay
 
@@ -23,10 +25,12 @@ class Board(object):
         '''Create the board matrix
            Create the pieces sand add them to the board
         '''
+        self.name = 'board'
         self.setup_data = setup_data
         self.matrix= [[None for j in range(0, 8)] for i in range(0, 8)]
         self.pieces = []
         self.captured = []
+        self.in_check = {'w': 0, 'b': 0}
         self.setup()
         self.display = BoardDisplay(self)
 
@@ -41,14 +45,23 @@ class Board(object):
 
             # eq.: k-e1
             char, position = row.split('-')
-            piece = Pieces.getPiece(char)
+            piece = Pieces.create(char)
 
             self.placePiece(piece, position)
             self.pieces.append(piece)
 
-    def getPiece(self, position):
+    def getPieceAt(self, position):
         x, y = position2xy(position)
         return self.matrix[y][x]
+
+    def getPiece(self, char, color):
+        '''Given a character representation of a piece and color
+           Return first occurance of it on the board
+        '''
+        for piece in self.pieces:
+            if piece.char == char and piece.color == color:
+                return piece
+        return None
 
     def placePiece(self, piece, position):
         '''Place a piece on the board at a given position
@@ -60,23 +73,26 @@ class Board(object):
         piece.position = position
         return piece
 
-    def movePiece(self, piece, position):
+    def movePiece(self, piece, position, check_legal=1, check_check=1):
         '''Move a piece on the board to a given position
            confirm move is valid
            perform captures if applicable
            promote pawns
         '''
-        if position not in self.possibleMoves(piece):
-            raise BoardError('Invalid Move: %s can not move to %s' %
-                             (piece, position))
+        if check_legal:
+            if position not in self.possibleMoves(piece):
+                raise BoardError('Invalid Move: %s can not move to %s' %
+                                 (piece, position))
         # remove piece from the board
         x,y = position2xy(piece.position)
         self.matrix[y][x] = None
 
         # check capture
         x,y = position2xy(position)
-        if self.matrix[y][x]:
-            self.captured.append(self.matrix[y][x])
+        opponent_piece = self.matrix[y][x]
+        if opponent_piece:
+            opponent_piece.position = 'x'
+            self.captured.append(opponent_piece)
 
         # promote pawns
         if piece.char == 'p':
@@ -87,28 +103,60 @@ class Board(object):
                 self.pieces[ind] = piece
 
         # place piece
-        self.matrix[y][x] = piece
         piece.position = position
+        self.matrix[y][x] = piece
+
+        # is this check?
+        if check_check:
+            opponent_king = self.getPiece('k', piece.opposite_color)
+            if opponent_king.position in self.possibleMoves(piece):
+                self.in_check[opponent_king.color] = 1
+
         return piece
 
-    def possibleMoves(self, piece):
+    def possibleMoves(self, piece, check_check=1):
         '''Given a piece on the board
            Return a list of possible positions it can move to
         '''
-        #print 'possibleMoves(%s)' % piece
         if not piece:
             return []
 
         possibilities = []
-        for move in piece.moves:
-            new_positions = self.getMoveDestination(piece, move)
-            if not new_positions:
+        for move_op in piece.move_ops:
+            new_positions = self.getMoveDestination(piece, move_op)
+
+            if not check_check:
+                possibilities.extend(new_positions)
                 continue
+
+            # Will you be in check?
             for new_position in new_positions:
-                piece2 = self.getPiece(new_position)
-                if piece2 and piece2.color == piece.color:
-                    continue
-                possibilities.append(new_position)
+                #print 'new_position:', new_position
+
+                # build hypothetical board
+                hypo_board = deepcopy(self)
+                hypo_board.name = 'hypo_board'
+                hypo_piece = hypo_board.getPieceAt(piece.position)
+                # make the move
+                hypo_board.movePiece(hypo_piece, new_position, check_legal=0,
+                                     check_check=0)
+                # Can they capture your king?
+                king = hypo_board.getPiece('k', hypo_piece.color)
+                puts_you_in_check = 0
+                for p in hypo_board.pieces:
+                    if p.color != hypo_piece.opposite_color or p.position=='x':
+                        continue
+                    hypo_possibilities = hypo_board.possibleMoves(
+                        p, check_check=0)
+                    if king.position in hypo_possibilities:
+                        puts_you_in_check = 1
+                        break
+
+                del hypo_board
+                if not puts_you_in_check:
+                    possibilities.append(new_position)
+
+        #print '%s possibilities: %s: %s' % (self.name, piece, possibilities)
         return possibilities
 
     def getMoveDestination(self, piece, move):
@@ -116,8 +164,6 @@ class Board(object):
            Return the destination postion after the move
              or None if the move is not possible.
         '''
-        #print 'getMoveDestination(%s, %s)' % (piece, move)
-
         x,y = position2xy(piece.position)
         direction, dist = move
 
@@ -176,14 +222,14 @@ class Board(object):
             if y2 not in range(0, 8) or x2 not in range(0, 8):
                 break
 
-            # piece there?
             new_position = xy2position(x2, y2)
-            piece2 = self.getPiece(new_position)
+
+            # occupied squre?
+            piece2 = self.getPieceAt(new_position)
             if piece2:
-                # opponents piece?
                 if piece2.color != piece.color:
+                    # can capture opponents piece
                     new_positions.append(new_position)
-                # your piece?
                 break
 
             new_positions.append(new_position)

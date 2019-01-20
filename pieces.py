@@ -7,28 +7,32 @@
 class PiecesError(Exception): pass
 
 class Pieces(object):
-    '''Preside of Pieces Objects
-    '''
+    '''Preside of Pieces Objects'''
 
     @staticmethod
-    def getPiece(p):
-        orig_p = p
-        p = p.lower()
-        color = 'w' if p == orig_p else 'b'
-        if p == 'p':
+    def create(char):
+        '''Given a char representation of a piece
+           Return instantiated Piece object of that type
+           Colors: chars lowercase = white
+                   chars uppercase = black
+        '''
+        orig_char = char
+        char = char.lower()
+        color = 'w' if char == orig_char else 'b'
+        if char == 'p':
             return Pawn(color)
-        elif p == 'n':
+        elif char == 'n':
             return Knight(color)
-        elif p == 'b':
+        elif char == 'b':
             return Bishop(color)
-        elif p == 'r':
+        elif char == 'r':
             return Rook(color)
-        elif p == 'q':
+        elif char == 'q':
             return Queen(color)
-        elif p == 'k':
+        elif char == 'k':
             return King(color)
         else:
-            raise PiecesError('Unrecognzied piece abbreviation: %s' % orig_p)
+            raise PiecesError('Unrecognzied piece abbreviation: %s' %orig_char)
 
 class PieceError(Exception): pass
 
@@ -44,6 +48,10 @@ class Piece(object):
     def __repr__(self):
         return '%s-%s' %(self.char if self.color == 'w' else self.char.upper(),
                          self.position)
+    @property
+    def opposite_color(self):
+        return 'w' if self.color == 'b' else 'b'
+
     @property
     def char_glyph(self):
         return self.char if self.color == 'w' else self.char.upper()
@@ -67,12 +75,12 @@ class Pawn(Piece):
     glyphs = ['♙', '♟']
 
     @property
-    def moves(self):
-        _moves = ['f1']
+    def move_ops(self):
+        _move_ops = ['f1']
         if (self.color == 'w' and self.position[1] == '2') or \
            (self.color == 'b' and self.position[1] == '7'):
-            _moves.append('f2')
-        return _moves
+            _move_ops.append('f2')
+        return _move_ops
 
     # to do: build custom capture logic
 
@@ -80,30 +88,30 @@ class Knight(Piece):
     char = 'n'
     value = 3
     glyphs = ['♘', '♞']
-    moves = ['i1','j1','k1','m1','n1','o1','p1','q1']
+    move_ops = ['i1','j1','k1','m1','n1','o1','p1','q1']
 
 class Bishop(Piece):
     char = 'b'
     value = 3
     glyphs = ['♗', '♝']
-    moves = ['d*', 'e*', 'g*', 'h*']
+    move_ops = ['d*', 'e*', 'g*', 'h*']
 
 class Rook(Piece):
     char = 'r'
     value = 5
     glyphs = ['♖', '♜']
-    moves =['f*', 'b*', 'l*', 'r*']
+    move_ops =['f*', 'b*', 'l*', 'r*']
 
 class Queen(Piece):
     char = 'q'
     value = 9
     glyphs = ['♕', '♛']
-    moves = ['f*', 'b*', 'l*', 'r*',
-             'd*', 'e*', 'g*', 'h*']
+    move_ops = ['f*', 'b*', 'l*', 'r*',
+                'd*', 'e*', 'g*', 'h*']
 
 class King(Piece):
     char = 'k'
     value = None
     glyphs = ['♔', '♚']
-    moves = ['f1', 'b1', 'l1', 'r1',
-             'd1', 'e1', 'g1', 'h1']
+    move_ops = ['f1', 'b1', 'l1', 'r1',
+                'd1', 'e1', 'g1', 'h1']
