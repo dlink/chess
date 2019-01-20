@@ -1,10 +1,22 @@
 # -*- coding: utf-8 -*-
 
+class BoardDisplayError(Exception): pass
+
 class BoardDisplay(object):
 
     def __init__(self, board):
         self.board = board
+        self.type = 'standard'
 
+    def display(self):
+        if self.type == 'standard':
+            return self.standard()
+        elif self.type == 'simple':
+            return self.simple()
+        elif self.type == 'one_line':
+            return self.one_line()
+        raise BoardDisplayError('Unrecognized display type:' % self.type)
+    
     def one_line(self):
         '''Return a representation of the board in one line
            RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr
@@ -30,11 +42,11 @@ class BoardDisplay(object):
         for i, row in enumerate(reversed(self.board.matrix)):
             o += ' '.join('%s' % (p.glyph if p else '.') for p in row)
             if i == 0:
-                o += '   '+ ''.join([p.glyph for p in self.board.captured
-                                     if p.color == 'w']) + '\n'
+                o += '   '+ ' '.join([p.glyph for p in self.board.captured
+                                      if p.color == 'w']) + '\n'
             elif i == 7:
-                o += '   '+ ''.join([p.glyph for p in self.board.captured
-                                     if p.color == 'b']) + '\n'
+                o += '   '+ ' '.join([p.glyph for p in self.board.captured
+                                      if p.color == 'b']) + '\n'
             else:
                 o += '\n'
         o += 'a b c d e f g h'
@@ -76,11 +88,11 @@ class BoardDisplay(object):
 
             # show captured pieces
             if i == 1:
-                o += '   '+ ''.join([p.glyph for p in self.board.captured
-                                     if p.color == 'w']) + '\n'
+                o += '   '+ ' '.join([p.glyph for p in self.board.captured
+                                      if p.color == 'w']) + '\n'
             elif i == 7:
-                o += '   '+ ''.join([p.glyph for p in self.board.captured
-                                     if p.color == 'b']) + '\n'
+                o += '   '+ ' '.join([p.glyph for p in self.board.captured
+                                      if p.color == 'b']) + '\n'
             else:
                 o += '\n'
 
@@ -90,4 +102,4 @@ class BoardDisplay(object):
             else:
                 o += '  ╚═══' + '╧═══' * 7 + '╝ \n'
                 o += '    a   b   c   d   e   f   g   h\n'
-        return o
+        return o.strip()
