@@ -12,7 +12,8 @@ class GameError(Exception): pass
 
 class Game(object):
     def __init__(self):
-        self.board = Board('data/3rooks_and_kings.board')
+        self.board = Board(display_type='standard',
+                           setup_data='data/standard.board') 
         self.state = [self.board, '']
         self.history = []
         self.moves = []
@@ -26,64 +27,46 @@ class Game(object):
 
     def playWhite(self):
         os.system('clear')
-        print self.board.display.simple()
+        print self.board.display.display()
         print 'starting board'
         self.user_pause()
         for i in range(0,100):
-            white_move = self.randomMove('w')
-            self.history.append([white_move,''])
-            #os.system('clear')
-            print self.board.display.simple()
-            if self.board.in_check['b']:
-                print 'CHECK ON BLACK'
-            print self.display_history()
+            self.whiteMove(self.randomMove('w'))
+            self.blackMove(self.userMove('b'))
 
-            black_move = self.userMove('b')
-            self.history[-1][1] = black_move
-            #os.system('clear')
-            print self.board.display.simple()
-            if self.board.in_check['w']:
-                print 'CHECK ON WHITE'
-            print self.display_history()
-            self.user_pause()
+    def playBlack(self):
+        os.system('clear')
+        print self.board.display.display()
+        print 'starting board'
+        for i in range(0,100):
+            self.whiteMove(self.userMove('w'))
+            self.blackMove(self.randomMove('b'))
 
     def selfPlay(self):
         os.system('clear')
-        print self.board.display.simple()
+        print self.board.display.display()
         print 'starting board'
         self.user_pause()
         for i in range(0,100):
-            white_move = self.randomMove('w')
-            self.history.append([white_move,''])
-            #os.system('clear')
-            print self.board.display.simple()
-            if self.board.in_check['b']:
-                print 'CHECK ON BLACK'
-            print self.display_history()
+            self.whiteMove(self.randomMove('w'))
             self.user_pause()
-
-            black_move = self.randomMove('b')
-            self.history[-1][1] = black_move
-            #os.system('clear')
-            print self.board.display.simple()
-            if self.board.in_check['w']:
-                print 'CHECK ON WHITE'
-            print self.display_history()
+            self.blackMove(self.randomMove('b'))
             self.user_pause()
 
     def userMove(self, color):
-        input = raw_input('Enter move, x to exit: ')
         input_okay = 0
         while not input_okay:
+            input = raw_input('Enter move, x to exit: ')
             if input.lower() == 'x':
                 self.endGame()
             try:
                 char, position = input.split('-')
+                piece = self.board.getPiece(char, color)
+                self.board.movePiece(piece, position)
             except Exception, e:
                 print str(e)
+                continue
             input_okay = 1
-        piece = self.board.getPiece(char, color)
-        self.board.movePiece(piece, position)
         return piece
 
     def randomMove(self, color):
@@ -104,6 +87,40 @@ class Game(object):
         position = possible_moves[dice]
         return self.board.movePiece(piece, position, check_legal=0)
 
+    def whiteMove(self, move):
+        print 
+        print self.board.display.display()
+        if self.board.check_mate['b']:
+            print '  CHECK MATE'
+            move = str(move) + '#'
+        elif self.board.in_check['b']:
+            print '  Check'
+            move = str(move) + '+'
+            
+        self.history.append([move,''])
+        print self.display_history()
+        print
+        
+        if self.board.check_mate['b']:
+            self.endGame()
+
+    def blackMove(self, move):
+        print
+        print self.board.display.display()
+        if self.board.check_mate['w']:
+            print 'CHECK MATE ON WHITE'
+            move = str(move) + '#'
+        elif self.board.in_check['w']:
+            print 'CHECK ON WHITE'
+            move = str(move) + '+'
+
+        self.history[-1][1] = move
+        print self.display_history()
+        print
+        
+        if self.board.check_mate['w']:
+            self.endGame()
+
     def user_pause(self):
         input = raw_input('Enter to continue, X to exit ')
         if input.lower() == 'x':
@@ -117,8 +134,9 @@ if __name__ == '__main__':
     game = Game()
     game.selfPlay()
     #game.playWhite()
-
-    #print game.board.display.simple()
+    #game.playBlack()
+    
+    #print game.board.display.display()
     #print 'state:'
     #print game.state
 
@@ -128,13 +146,14 @@ if __name__ == '__main__':
 
     '''
     white_move =  game.board.movePiece(game.board.pieces[0], 'e7')
-    print game.board.display.simple()
+    print game.board.display.display()
     move = [white_move, None]
     game.history.append(move)
     print game.history
 
     black_move = game.board.movePiece(game.board.pieces[17], 'f1')
-    print game.board.display.simple()
+    print game.board.display.display()
     game.history[-1][1] = black_move
     print game.history
     '''
+g
