@@ -76,14 +76,15 @@ class Pawn(Piece):
 
     @property
     def move_ops(self):
-        _move_ops = ['f1']
+        '''Can move one move or two depending starting pos.
+           Can move diagnal forward to capture
+        '''
+        _move_ops = ['d1', 'e1', 'f1']
         if (self.color == 'w' and self.position[1] == '2') or \
            (self.color == 'b' and self.position[1] == '7'):
             _move_ops.append('f2')
         return _move_ops
-
-    # to do: build custom capture logic
-
+        
 class Knight(Piece):
     char = 'n'
     value = 3

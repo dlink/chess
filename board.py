@@ -77,7 +77,7 @@ class Board(object):
     def getActivePieces(self, color):
         return [p for p in self.pieces
                 if p.color == color and p.position != 'x']
-    
+
     def placePiece(self, piece, position):
         '''Place a piece on the board at a given position
              piece is a Piece Object
@@ -139,7 +139,7 @@ class Board(object):
                         break
                 if not has_escape:
                     self.check_mate[piece.opposite_color] = 1
-                    
+
         return piece
 
     def possibleMoves(self, piece, check_check=1):
@@ -252,11 +252,24 @@ class Board(object):
 
             # occupied squre?
             piece2 = self.getPieceAt(new_position)
-            if piece2:
-                if piece2.color != piece.color:
-                    # can capture opponents piece
-                    new_positions.append(new_position)
-                break
+
+            # handle pawn capture
+            if piece.char == 'p':
+                if direction == 'f':
+                    if piece2:
+                        break
+                else:
+                    # diagonal move
+                    if not piece2 or piece2.color == piece.color:
+                        break
+
+            # pieces other than pawns
+            else:
+                if piece2:
+                    if piece2.color != piece.color:
+                        # can capture opponents piece
+                        new_positions.append(new_position)
+                    break
 
             new_positions.append(new_position)
 

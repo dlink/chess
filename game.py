@@ -132,9 +132,9 @@ class Game(object):
 
 if __name__ == '__main__':
     game = Game()
-    game.selfPlay()
+    #game.selfPlay()
     #game.playWhite()
-    #game.playBlack()
+    game.playBlack()
     
     #print game.board.display.display()
     #print 'state:'
