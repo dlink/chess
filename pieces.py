@@ -112,7 +112,7 @@ class Queen(Piece):
 
 class King(Piece):
     char = 'k'
-    value = None
+    value = 0
     glyphs = ['♔', '♚']
     move_ops = ['f1', 'b1', 'l1', 'r1',
                 'd1', 'e1', 'g1', 'h1']
