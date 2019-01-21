@@ -142,7 +142,7 @@ class Board(object):
 
         return piece
 
-    def possibleMoves(self, piece, check_check=1):
+    def possibleMoves(self, piece, check_check=1, captureable_only=0):
         '''Given a piece on the board
            Return a list of possible positions it can move to
         '''
@@ -185,7 +185,7 @@ class Board(object):
         #print '%s possibilities: %s: %s' % (self.name, piece, possibilities)
         return possibilities
 
-    def getMoveDestination(self, piece, move):
+    def getMoveDestination(self, piece, move, captureable_only=0):
         '''Given a piece on the board, and a move instruction
            Return the destination postion after the move
              or None if the move is not possible.
@@ -200,6 +200,11 @@ class Board(object):
         vector = 1 if piece.color == 'w' else -1
         dists = range(1,8) if dist == '*' else [int(dist)]
         for d in dists:
+            
+            if captureable_only:
+                if piece.char == 'p' and direction == 'f':
+                    continue
+                                                     
             vdist = vector * d
             # orthonal movements
             if direction == 'f':
