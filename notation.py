@@ -18,13 +18,30 @@ class Notations(object):
            Return a piece, and destination
         '''
         orig_an = an
+        check = 0
+        checkmate = 0
+        capture = 0
+        
+        # check checks
         if an[-1] == '+':
             print 'check'
+            check = 1
             an = an[0:-1]
         elif an[-1] == '#':
             print 'checkmate'
+            checkmate = 1
             an = an[0:-1]
 
+        # check captures
+        if an[1] == 'x':
+            print 'capture'
+            capture = 1
+            an = an[0] + an[2:]
+        elif an[2] == 'x':
+            print 'capture'
+            capture = 1
+            an = an[0:1] + an[3:]
+            
         num_char = len(an)
         if num_char == 2:
             position = an
@@ -51,7 +68,7 @@ class Notations(object):
                             pos_pieces.append(piece)
                             break
             if not pos_pieces:
-                raise NotationsError('Illegal move: %s' % orig_an)
+                raise NotationsError('Move not possible: %s' % orig_an)
             elif len(pos_pieces) == 1:
                 piece = pos_pieces[0]
             else:
@@ -80,7 +97,9 @@ if __name__ == '__main__':
     color = sys.argv[2]
     print "an:", an, "color:", color
 
-    board_ = Board(setup_data='data/2rooks_and_kings.board')
+    #board_ = Board(setup_data='data/2rooks_and_kings.board')
+    #board_ = Board(setup_data='data/standard.board')
+    board_ = Board(setup_data='data/test.board')
     
     n = Notations(board_)
     print n.getPieceAndDest(an, color)
