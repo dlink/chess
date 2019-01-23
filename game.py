@@ -14,6 +14,7 @@ class GameError(Exception): pass
 class Game(object):
     def __init__(self):
         self.board = Board(display_type='standard',
+                           #setup_data='data/2rooks_and_kings.board',
                            setup_data='data/standard.board')
         self.state = [self.board, '']
         self.history = []
@@ -28,6 +29,7 @@ class Game(object):
 
     def playWhite(self):
         os.system('clear')
+        print 'You Play Black'
         print self.board.display.display()
         print 'starting board'
         self.user_pause()
@@ -38,6 +40,7 @@ class Game(object):
 
     def playBlack(self):
         os.system('clear')
+        print 'You Play White'
         print self.board.display.display()
         print 'starting board'
         for i in range(0,100):
@@ -47,6 +50,7 @@ class Game(object):
 
     def selfPlay(self):
         os.system('clear')
+        print 'Computer plays itself'
         print self.board.display.display()
         print 'starting board'
         self.user_pause()
@@ -95,7 +99,22 @@ class Game(object):
                                      check_check=0)
                 ma, da, cca = Strategy(hypo_board).evaluation2()
                 score = ma + da + cca
-
+                # try looking one more turn
+                '''
+                for hype_piece2 = hypo_board.getActivePieces(piece.opposite_color):
+                    black_best_move = None
+                    black_best_move_score = None
+                    for m, new_position2 in enumerate(
+                            hypo_board.possibleMoves(hypo_piece2, check_check=0)):
+                        ma, da, cca = Strategy(hypo_board).evaluation2()
+                        sore = ma, da, cca
+                        if piece.opposite_color == 'b':
+                            score = -score
+                        if m == 0 or score < black_best_move:
+                            black_best_move = new_position2
+                            black_best_move_score = score
+                        black_best_move 
+                '''
                 if color == 'b':
                     score = -score
                 if j == 0 or score > best_move_score:
