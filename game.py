@@ -14,8 +14,9 @@ class GameError(Exception): pass
 class Game(object):
     def __init__(self):
         self.board = Board(display_type='standard',
-                           #setup_data='data/2rooks_and_kings.board',
-                           setup_data='data/standard.board')
+                           setup_data='data/2rooks_and_kings.board'
+                           #setup_data='data/standard.board'
+        )
         self.state = [self.board, '']
         self.history = []
         self.moves = []
