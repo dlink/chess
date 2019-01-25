@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import re
 from copy import deepcopy
 
 from pieces import Pieces, Queen
@@ -44,11 +45,17 @@ class Board(object):
         '''Set up the pieces on the board based in input file
         '''
         for row in open(self.setup_data).readlines():
-            row = row.strip()
 
-            # eq.: k-e1
-            char, position = row.split('-')
-            piece = Pieces.create(char)
+            # ignore comments, skip blank lines
+            row = re.sub('#.*', '', row).strip()
+            if not row:
+                continue
+            
+            # eq.: w:Ke1
+            color, piece_position = row.split(':')
+            char = piece_position[0]
+            position = piece_position[1:]
+            piece = Pieces.create(char, color)
 
             self.placePiece(piece, position)
             self.pieces.append(piece)
@@ -88,12 +95,14 @@ class Board(object):
         piece.position = position
         return piece
 
-    def movePiece(self, piece, position, check_legal=1, check_check=1):
+    def move00(self, color, an, check_legal=1, check_check=1):
         '''Move a piece on the board to a given position
            confirm move is valid
            perform captures if applicable
            promote pawns
         '''
+        piece, position = self.notation.getPieceAndDest(an, color)
+
         # init in_check
         self.in_check[piece.opposite_color] = 0
 
@@ -113,6 +122,64 @@ class Board(object):
             self.captured.append(opponent_piece)
 
         # promote pawns
+        if piece.char == 'P':
+            if (piece.color == 'w' and position[1] == '8') or \
+               (piece.color == 'b' and position[1] == '1'):
+                ind = self.pieces.index(piece)
+                piece = Queen(piece.color)
+                self.pieces[ind] = piece
+
+        # place piece
+        piece.position = position
+        self.matrix[y][x] = piece
+
+        # is this check?
+        if check_check:
+            opponent_king = self.getPiece('K', piece.opposite_color)
+            if opponent_king.position in self.possibleMoves(piece):
+                self.in_check[opponent_king.color] = 1
+
+                # is this check mate?
+                has_escape = 0
+                for op_piece in self.getActivePieces(piece.opposite_color):
+                    op_possibilities = self.possibleMoves(op_piece)
+                    if op_possibilities:
+                        has_escape = 1
+                        break
+                if not has_escape:
+                    self.check_mate[piece.opposite_color] = 1
+        return piece
+    
+    def movePiece(self, piece, position, check_legal=1, check_check=1):
+        '''Move a piece on the board to a given position
+           confirm move is valid
+           perform captures if applicable
+           promote pawns
+        '''
+        capture = 0
+        check = 0
+        check_mate =0
+        
+        # init in_check
+        self.in_check[piece.opposite_color] = 0
+
+        if check_legal:
+            if position not in self.possibleMoves(piece):
+                raise BoardError('Invalid Move: %s can not move to %s' %
+                                 (piece, position))
+        # remove piece from the board
+        x,y = position2xy(piece.position)
+        self.matrix[y][x] = None
+
+        # check capture
+        x,y = position2xy(position)
+        opponent_piece = self.matrix[y][x]
+        if opponent_piece:
+            opponent_piece.position = 'x'
+            self.captured.append(opponent_piece)
+            capture = 1
+        
+        # promote pawns
         if piece.char == 'p':
             if (piece.color == 'w' and position[1] == '8') or \
                (piece.color == 'b' and position[1] == '1'):
@@ -126,10 +193,9 @@ class Board(object):
 
         # is this check?
         if check_check:
-            opponent_king = self.getPiece('k', piece.opposite_color)
+            opponent_king = self.getPiece('K', piece.opposite_color)
             if opponent_king.position in self.possibleMoves(piece):
-                self.in_check[opponent_king.color] = 1
-
+                
                 # is this check mate?
                 has_escape = 0
                 for op_piece in self.getActivePieces(piece.opposite_color):
@@ -137,29 +203,36 @@ class Board(object):
                     if op_possibilities:
                         has_escape = 1
                         break
-                if not has_escape:
+                if has_escape:
+                    self.in_check[opponent_king.color] = 1
+                    check = 1
+                else:
                     self.check_mate[piece.opposite_color] = 1
+                    check_mate = 1
 
-        return piece
+        return piece, capture, check, check_mate
 
     def possibleMoves(self, piece, check_check=1, captureable_only=0):
         '''Given a piece on the board
            Return a list of possible positions it can move to
         '''
+        
+        # TO DO: handle castling
+        
         if not piece:
             return []
 
         possibilities = []
         for move_op in piece.move_ops:
             new_positions = self.getMoveDestination(piece, move_op)
-
             if not check_check:
                 possibilities.extend(new_positions)
                 continue
 
             # Will you be in check?
             for new_position in new_positions:
-                #print 'new_position:', new_position
+                if piece.color == 'b' and piece.char == 'P':
+                    print 'new_position:', piece, new_position
 
                 # build hypothetical board
                 hypo_board = deepcopy(self)
@@ -169,7 +242,7 @@ class Board(object):
                 hypo_board.movePiece(hypo_piece, new_position, check_legal=0,
                                      check_check=0)
                 # Can they capture your king?
-                king = hypo_board.getPiece('k', hypo_piece.color)
+                king = hypo_board.getPiece('K', hypo_piece.color)
                 puts_you_in_check = 0
                 for p in hypo_board.getActivePieces(hypo_piece.opposite_color):
                     hypo_possibilities = hypo_board.possibleMoves(
@@ -259,7 +332,7 @@ class Board(object):
             piece2 = self.getPieceAt(new_position)
 
             # handle pawn capture
-            if piece.char == 'p':
+            if piece.char == 'P':
                 if direction == 'f':
                     if piece2:
                         break

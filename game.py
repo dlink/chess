@@ -7,6 +7,7 @@ from copy import deepcopy
 from random import randint, seed
 
 from board import Board
+from notation import Notation
 from strategy import Strategy
 
 class GameError(Exception): pass
@@ -14,9 +15,11 @@ class GameError(Exception): pass
 class Game(object):
     def __init__(self):
         self.board = Board(display_type='standard',
-                           setup_data='data/2rooks_and_kings.board'
-                           #setup_data='data/standard.board'
+                           #setup_data='data/test.board'
+                           #setup_data='data/2rooks_and_kings.board'
+                           setup_data='data/standard2.board'
         )
+        self.notation = Notation(self.board)
         self.state = [self.board, '']
         self.history = []
         self.moves = []
@@ -66,18 +69,21 @@ class Game(object):
     def userMove(self, color):
         input_okay = 0
         while not input_okay:
-            input = raw_input('Enter move, x to exit: ')
-            if input.lower() == 'x':
+            an = raw_input('Enter move, x to exit: ')
+            if an.lower() == 'x':
                 self.endGame()
             try:
-                char, position = input.split('-')
-                piece = self.board.getPiece(char, color)
-                self.board.movePiece(piece, position)
+                piece, position = self.notation.getPieceAndDest(an, color)
+                #char, position = input.split('-')
+                #piece = self.board.getPiece(char, color)
+                orig_position = piece.position
+                piece, capture, check, check_mate  = self.board.movePiece(piece, position)
+                #piece = self.board.move(color, an)
             except Exception, e:
                 print str(e)
                 continue
             input_okay = 1
-        return piece
+        return self.notation.getNotation(orig_position, piece, capture, check, check_mate)
 
     def computerMove(self, color):
         best_piece = None
@@ -128,7 +134,9 @@ class Game(object):
                 best_piece_move = best_move
                 best_piece_move_score = best_move_score
                 #print 'best_piece_move:', best_piece, best_move, best_piece_move_score
-        return self.board.movePiece(best_piece, best_piece_move, check_legal=0)
+        orig_position = best_piece.position
+        piece, capture, check, check_mate  = self.board.movePiece(best_piece, best_piece_move, check_legal=0)
+        return self.notation.getNotation(orig_position, piece, capture, check, check_mate)
             
                 
     def randomMove(self, color):
@@ -196,10 +204,10 @@ class Game(object):
 
 if __name__ == '__main__':
     game = Game()
-    game.selfPlay()
+    #game.selfPlay()
     #game.playWhite()
-    #game.playBlack()
-    
+    game.playBlack()
+
     #print game.board.display.display()
     #print 'state:'
     #print game.state

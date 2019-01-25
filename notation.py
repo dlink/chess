@@ -1,23 +1,39 @@
 '''Chess Algebraic Notation Module'''
 
-class NotationsError(Exception): pass
+class NotationError(Exception): pass
 
-class Notations(object):
+class Notation(object):
 
     def __init__(self, board):
         self.board = board
 
-    def getNotation(self, piece, destination, color):
-        '''Given a piece and a destination and color
+    def getNotation(self, orig_position, piece, capture, check, check_mate):
+        '''Given a piece's original position, and piece already played
            Return an algebraic notation expression
         '''
-        pass
+        if piece.char == 'P':
+            an = piece.position
+        else:
+            an = piece.char + piece.position
+        #else:
+        #    an = '%s^%s' % (orig_position, piece)
+        
+        if capture:
+            if len(an) == 2:
+                an = orig_position[0] + 'x' + an
+            else:
+                an = an[0] + 'x' + an[1:]
+        elif check:
+            an += '+'
+        elif check_mate:
+            an += '#'
+            
+        return an    
 
     def getPieceAndDest(self, an, color):
         '''Given an algebraic notation expression and color
            Return a piece, and destination
         '''
-        # TO DO: handle pawn capture
 
         orig_an = an
         check = 0
@@ -33,7 +49,7 @@ class Notations(object):
             return 'pending'
 
         # Preprocessing
-        
+        print 'an:', an
         # check  checks: +
         if an[-1] == '+':
             print 'check'
@@ -51,7 +67,11 @@ class Notations(object):
             print 'capture'
             capture = 1
             an = an[0] + an[2:]
-        elif an[2] == 'x':
+            # pawns
+            if an[0].upper() != an[0]:
+                an = an[1:]
+            print 'new an:', an
+        elif len(an) >= 3 and an[2] == 'x':
             print 'capture'
             capture = 1
             an = an[0:1] + an[3:]
@@ -59,23 +79,9 @@ class Notations(object):
         # processing
         
         num_char = len(an)
-        # chars, eq.: e4
-        if num_char == 2:
-            position = an
-            x, y = position2xy(an)
-            if x > 7 or y > 7:
-                raise NotationsError('Illegal move: %s' % an)
-            
-            vector = -1 if color == 'w' else 1
-            for j in range(y+vector, y+3*vector, vector):
-                piece = self.board.matrix[j][x]
-                if piece:
-                    break
-            if not piece or piece.color != color:
-                raise NotationsError('Illegal move: %s' % orig_an)
-            return piece, position
-        
+
         # promption
+        # TO DO: refactor to rely on board.possibleMoves()
         if num_char == 3 and \
            ((color == 'w' and an[1] == '8') or \
             (color == 'b' and an[1] == '1')):
@@ -90,26 +96,30 @@ class Notations(object):
             return piece, position
 
         # Three chars, eq. Nc3
-        if num_char == 3:
-            piece_char = an[0]
-            position = an[1:]
+        if num_char in (2, 3):
+            if num_char == 2:
+                piece_char = 'P'
+                position = an
+            else:
+                piece_char = an[0]
+                position = an[1:]
             pos_pieces = []
             for piece in self.board.getActivePieces(color):
-                if piece.char == piece_char.lower():
+                if piece.char == piece_char:
                     for pp in self.board.possibleMoves(piece, check_check=0):
                         if pp == position:
                             pos_pieces.append(piece)
                             break
             if not pos_pieces:
-                raise NotationsError('Move not possible: %s' % orig_an)
+                raise NotationError('Move not possible: %s' % orig_an)
             elif len(pos_pieces) == 1:
                 piece = pos_pieces[0]
             else:
-                raise NotationsError('Ambiguous move: %s: (%s)' %
+                raise NotationError('Ambiguous move: %s: (%s)' %
                                     (an, ', '.join(map(str, pos_pieces))))
             return piece, position
         
-        raise NotationsError('Unrecognzied notation: %s' % an)
+        raise NotationError('Unrecognzied notation: %s' % an)
         
 def xy2position(x, y):
     file_ = y+1
@@ -132,8 +142,9 @@ if __name__ == '__main__':
 
     #board_ = Board(setup_data='data/2rooks_and_kings.board')
     #board_ = Board(setup_data='data/standard.board')
-    board_ = Board(setup_data='data/test.board')
+    #board_ = Board(setup_data='data/test.board')
+    board_ = Board(setup_data='data/standard2.board')
     
-    n = Notations(board_)
+    n = Notation(board_)
     print n.getPieceAndDest(an, color)
     

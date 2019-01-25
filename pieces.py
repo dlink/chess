@@ -10,7 +10,28 @@ class Pieces(object):
     '''Preside of Pieces Objects'''
 
     @staticmethod
-    def create(char):
+    def create(char, color):
+        '''Given a char representation of a piece, and a color (w,b)
+           Return instantiated Piece object of that type
+           It will not yet have a postion
+        '''
+        char = char
+        if char == 'P':
+            return Pawn(color)
+        elif char == 'N':
+            return Knight(color)
+        elif char == 'B':
+            return Bishop(color)
+        elif char == 'R':
+            return Rook(color)
+        elif char == 'Q':
+            return Queen(color)
+        elif char == 'K':
+            return King(color)
+        else:
+            raise PiecesError('Unrecognzied piece abbreviation: %s' % char)
+    @staticmethod
+    def create0(char):
         '''Given a char representation of a piece
            Return instantiated Piece object of that type
            Colors: chars lowercase = white
@@ -46,8 +67,10 @@ class Piece(object):
         self.postion = None
 
     def __repr__(self):
-        return '%s-%s' %(self.char if self.color == 'w' else self.char.upper(),
-                         self.position)
+        #return '%s-%s' %(self.char if self.color == 'w' else self.char.upper(),
+       #                  self.position)
+        return '%s:%s%s' %(self.color, self.char, self.position)
+
     @property
     def opposite_color(self):
         return 'w' if self.color == 'b' else 'b'
@@ -70,7 +93,7 @@ class Piece(object):
         return c
 
 class Pawn(Piece):
-    char = 'p'
+    char = 'P'
     value = 1
     glyphs = ['♙', '♟']
 
@@ -86,32 +109,32 @@ class Pawn(Piece):
         return _move_ops
         
 class Knight(Piece):
-    char = 'n'
+    char = 'N'
     value = 3
     glyphs = ['♘', '♞']
     move_ops = ['i1','j1','k1','m1','n1','o1','p1','q1']
 
 class Bishop(Piece):
-    char = 'b'
+    char = 'B'
     value = 3
     glyphs = ['♗', '♝']
     move_ops = ['d*', 'e*', 'g*', 'h*']
 
 class Rook(Piece):
-    char = 'r'
+    char = 'R'
     value = 5
     glyphs = ['♖', '♜']
     move_ops =['f*', 'b*', 'l*', 'r*']
 
 class Queen(Piece):
-    char = 'q'
+    char = 'Q'
     value = 9
     glyphs = ['♕', '♛']
     move_ops = ['f*', 'b*', 'l*', 'r*',
                 'd*', 'e*', 'g*', 'h*']
 
 class King(Piece):
-    char = 'k'
+    char = 'K'
     value = 0
     glyphs = ['♔', '♚']
     move_ops = ['f1', 'b1', 'l1', 'r1',

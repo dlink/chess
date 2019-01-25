@@ -8,10 +8,10 @@ class Strategy(object):
     @property
     def evaluation(self):
         o = ''
-        o += 'Material Advantage: %s vs %s\n' % self.materialAdvantage()
+        o += 'Material Advantage: %s:%s\n' % self.materialAdvantage()
         wd, bd, wc, bc = self.developmentAndCenterAdvantage()
-        o += 'Development Advantage: %s vs %s\n' %  (wd, bd)
-        o += 'Center Control Advantage: %s vs %s' %  (wc, bc)
+        o += 'Development Advantage: %s:%s\n' %  (wd, bd)
+        o += 'Center Control Advantage: %s:%s' %  (wc, bc)
         return o
     
     def evaluation2(self):
