@@ -12,21 +12,35 @@ class Notations(object):
            Return an algebraic notation expression
         '''
         pass
-    
+
     def getPieceAndDest(self, an, color):
         '''Given an algebraic notation expression and color
            Return a piece, and destination
         '''
+        # TO DO: handle pawn capture
+
         orig_an = an
         check = 0
         checkmate = 0
         capture = 0
+
+        # castle
+        if an == '0-0':
+            print 'King side castle'
+            return 'pending'
+        if an == '0-0-0':
+            print 'Queen side castle'
+            return 'pending'
+
+        # Preprocessing
         
-        # check checks
+        # check  checks: +
         if an[-1] == '+':
             print 'check'
             check = 1
             an = an[0:-1]
+            
+        # check check make: #
         elif an[-1] == '#':
             print 'checkmate'
             checkmate = 1
@@ -41,8 +55,11 @@ class Notations(object):
             print 'capture'
             capture = 1
             an = an[0:1] + an[3:]
-            
+
+        # processing
+        
         num_char = len(an)
+        # chars, eq.: e4
         if num_char == 2:
             position = an
             x, y = position2xy(an)
@@ -54,10 +71,26 @@ class Notations(object):
                 piece = self.board.matrix[j][x]
                 if piece:
                     break
-            if not piece:
-                raise NotationsError('Illegal move: %s' % an)
-            
-        elif num_char == 3:
+            if not piece or piece.color != color:
+                raise NotationsError('Illegal move: %s' % orig_an)
+            return piece, position
+        
+        # promption
+        if num_char == 3 and \
+           ((color == 'w' and an[1] == '8') or \
+            (color == 'b' and an[1] == '1')):
+            position = an[0:2]
+            x, y = position2xy(position)
+            piece_char = an[2]
+            vector = -1 if color == 'w' else 1
+            piece = self.board.matrix[y+vector][x]
+            if not piece or piece.color != color:
+                raise NotationError('Illegal move: %s' % orig_an)
+            print 'Promotion to: %s' % piece_char
+            return piece, position
+
+        # Three chars, eq. Nc3
+        if num_char == 3:
             piece_char = an[0]
             position = an[1:]
             pos_pieces = []
@@ -74,9 +107,9 @@ class Notations(object):
             else:
                 raise NotationsError('Ambiguous move: %s: (%s)' %
                                     (an, ', '.join(map(str, pos_pieces))))
-        else:
-            raise NotationsError('Unrecognzied notation: %s' % an)
-        return piece, position
+            return piece, position
+        
+        raise NotationsError('Unrecognzied notation: %s' % an)
         
 def xy2position(x, y):
     file_ = y+1
