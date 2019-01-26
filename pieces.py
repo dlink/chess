@@ -105,7 +105,7 @@ class Pawn(Piece):
         _move_ops = ['d1', 'e1', 'f1']
         if (self.color == 'w' and self.position[1] == '2') or \
            (self.color == 'b' and self.position[1] == '7'):
-            _move_ops.append('f2')
+            _move_ops[-1] = 'f2'
         return _move_ops
         
 class Knight(Piece):

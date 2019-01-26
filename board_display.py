@@ -77,7 +77,7 @@ class BoardDisplay(object):
                a   b   c   d   e   f   g   h
         '''
         o = ''
-        o += '     a   b   c   d   e   f   g   h\n'
+        o += '    a   b   c   d   e   f   g   h\n'
         o += '  ╔═══' + '╤═══' * 7 + '╗\n'
         for i, row in enumerate(reversed(self.board.matrix)):
 

@@ -38,7 +38,6 @@ class Game(object):
         print 'starting board'
         self.user_pause()
         for i in range(0,100):
-            #self.whiteMove(self.randomMove('w'))
             self.whiteMove(self.computerMove('w'))
             self.blackMove(self.userMove('b'))
 
@@ -49,7 +48,6 @@ class Game(object):
         print 'starting board'
         for i in range(0,100):
             self.whiteMove(self.userMove('w'))
-            #self.blackMove(self.randomMove('b'))
             self.blackMove(self.computerMove('b'))
 
     def selfPlay(self):
@@ -59,10 +57,8 @@ class Game(object):
         print 'starting board'
         self.user_pause()
         for i in range(0,100):
-            #self.whiteMove(self.randomMove('w'))
             self.whiteMove(self.computerMove('w'))
             self.user_pause()
-            #self.blackMove(self.randomMove('b'))
             self.blackMove(self.computerMove('b'))
             self.user_pause()
 
@@ -74,16 +70,15 @@ class Game(object):
                 self.endGame()
             try:
                 piece, position = self.notation.getPieceAndDest(an, color)
-                #char, position = input.split('-')
-                #piece = self.board.getPiece(char, color)
                 orig_position = piece.position
-                piece, capture, check, check_mate  = self.board.movePiece(piece, position)
-                #piece = self.board.move(color, an)
+                piece, capture, check, check_mate \
+                    = self.board.movePiece(piece, position)
             except Exception, e:
                 print str(e)
                 continue
             input_okay = 1
-        return self.notation.getNotation(orig_position, piece, capture, check, check_mate)
+        return self.notation.getNotation(orig_position, piece, capture,
+                                         check, check_mate)
 
     def computerMove(self, color):
         best_piece = None
@@ -127,17 +122,16 @@ class Game(object):
                 if j == 0 or score > best_move_score:
                     best_move = new_position
                     best_move_score = score
-                    #print '..best_move:', piece, new_position, best_move_score, ma, da, cca
                 del hypo_board
             if not best_piece or best_move_score > best_piece_move_score:
                 best_piece = piece
                 best_piece_move = best_move
                 best_piece_move_score = best_move_score
-                #print 'best_piece_move:', best_piece, best_move, best_piece_move_score
         orig_position = best_piece.position
-        piece, capture, check, check_mate  = self.board.movePiece(best_piece, best_piece_move, check_legal=0)
-        return self.notation.getNotation(orig_position, piece, capture, check, check_mate)
-            
+        piece, capture, check, check_mate \
+            = self.board.movePiece(best_piece, best_piece_move, check_legal=0)
+        return self.notation.getNotation(
+            orig_position, piece, capture, check, check_mate)
                 
     def randomMove(self, color):
         pieces = self.board.getActivePieces(color)
@@ -207,25 +201,3 @@ if __name__ == '__main__':
     #game.selfPlay()
     #game.playWhite()
     game.playBlack()
-
-    #print game.board.display.display()
-    #print 'state:'
-    #print game.state
-
-    #print 'possible moves:'
-    #for i, p in enumerate(game.board.pieces):
-    #    print '%s.' % (i+1), p, game.board.possibleMoves(p)
-
-    '''
-    white_move =  game.board.movePiece(game.board.pieces[0], 'e7')
-    print game.board.display.display()
-    move = [white_move, None]
-    game.history.append(move)
-    print game.history
-
-    black_move = game.board.movePiece(game.board.pieces[17], 'f1')
-    print game.board.display.display()
-    game.history[-1][1] = black_move
-    print game.history
-    '''
-g

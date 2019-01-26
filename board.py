@@ -42,8 +42,8 @@ class Board(object):
         return self.display.one_line()
 
     def setup(self):
-        '''Set up the pieces on the board based in input file
-        '''
+        '''Set up the pieces on the board based self.setup_data'''
+
         for row in open(self.setup_data).readlines():
 
             # ignore comments, skip blank lines
@@ -89,76 +89,23 @@ class Board(object):
         '''Place a piece on the board at a given position
              piece is a Piece Object
              position is a str coordinate, eq.: a1
+           Behavior: Set piece's position to the new position
         '''
         x,y = position2xy(position)
         self.matrix[y][x] = piece
         piece.position = position
         return piece
 
-    def move00(self, color, an, check_legal=1, check_check=1):
-        '''Move a piece on the board to a given position
-           confirm move is valid
-           perform captures if applicable
-           promote pawns
-        '''
-        piece, position = self.notation.getPieceAndDest(an, color)
-
-        # init in_check
-        self.in_check[piece.opposite_color] = 0
-
-        if check_legal:
-            if position not in self.possibleMoves(piece):
-                raise BoardError('Invalid Move: %s can not move to %s' %
-                                 (piece, position))
-        # remove piece from the board
-        x,y = position2xy(piece.position)
-        self.matrix[y][x] = None
-
-        # check capture
-        x,y = position2xy(position)
-        opponent_piece = self.matrix[y][x]
-        if opponent_piece:
-            opponent_piece.position = 'x'
-            self.captured.append(opponent_piece)
-
-        # promote pawns
-        if piece.char == 'P':
-            if (piece.color == 'w' and position[1] == '8') or \
-               (piece.color == 'b' and position[1] == '1'):
-                ind = self.pieces.index(piece)
-                piece = Queen(piece.color)
-                self.pieces[ind] = piece
-
-        # place piece
-        piece.position = position
-        self.matrix[y][x] = piece
-
-        # is this check?
-        if check_check:
-            opponent_king = self.getPiece('K', piece.opposite_color)
-            if opponent_king.position in self.possibleMoves(piece):
-                self.in_check[opponent_king.color] = 1
-
-                # is this check mate?
-                has_escape = 0
-                for op_piece in self.getActivePieces(piece.opposite_color):
-                    op_possibilities = self.possibleMoves(op_piece)
-                    if op_possibilities:
-                        has_escape = 1
-                        break
-                if not has_escape:
-                    self.check_mate[piece.opposite_color] = 1
-        return piece
-    
     def movePiece(self, piece, position, check_legal=1, check_check=1):
         '''Move a piece on the board to a given position
-           confirm move is valid
+           confirm move is valid - if check_legal=1
            perform captures if applicable
            promote pawns
+           Sets pieces position attr to the new position
         '''
         capture = 0
         check = 0
-        check_mate =0
+        check_mate = 0
         
         # init in_check
         self.in_check[piece.opposite_color] = 0
@@ -179,8 +126,8 @@ class Board(object):
             self.captured.append(opponent_piece)
             capture = 1
         
-        # promote pawns
-        if piece.char == 'p':
+        # promote pawns: d8Q, e8xQ
+        if piece.char == 'P':
             if (piece.color == 'w' and position[1] == '8') or \
                (piece.color == 'b' and position[1] == '1'):
                 ind = self.pieces.index(piece)
@@ -209,14 +156,24 @@ class Board(object):
                 else:
                     self.check_mate[piece.opposite_color] = 1
                     check_mate = 1
-
-        return piece, capture, check, check_mate
+        # TO DO: check if another piece of this type could also have moved
+        #        to the same postion
+        
+        # return move data
+        #return odic(piece_char = piece.char,
+        #            star_pos   = x,
+        #            end_pos    = piece.postion
+        #            capture    = capture,
+        #            check      = check,
+        #            check_mate = check_mate)
+        
+        return piece, orig_position, check, check, check_mate
 
     def possibleMoves(self, piece, check_check=1, captureable_only=0):
         '''Given a piece on the board
            Return a list of possible positions it can move to
         '''
-        
+        # TO DO: Why do we need captureable_only flag?
         # TO DO: handle castling
         
         if not piece:
@@ -225,61 +182,60 @@ class Board(object):
         possibilities = []
         for move_op in piece.move_ops:
             new_positions = self.getMoveDestination(piece, move_op)
+
+            # skip check check
             if not check_check:
                 possibilities.extend(new_positions)
                 continue
 
-            # Will you be in check?
+            # check check - Invalid move, due to a check? (Uses recursion)
             for new_position in new_positions:
-                if piece.color == 'b' and piece.char == 'P':
-                    print 'new_position:', piece, new_position
 
-                # build hypothetical board
+                # build hypothetical board and make move on it.
                 hypo_board = deepcopy(self)
                 hypo_board.name = 'hypo_board'
                 hypo_piece = hypo_board.getPieceAt(piece.position)
-                # make the move
                 hypo_board.movePiece(hypo_piece, new_position, check_legal=0,
                                      check_check=0)
-                # Can they capture your king?
+                # check opponent's possible moves 
+                in_check = 0
                 king = hypo_board.getPiece('K', hypo_piece.color)
-                puts_you_in_check = 0
                 for p in hypo_board.getActivePieces(hypo_piece.opposite_color):
                     hypo_possibilities = hypo_board.possibleMoves(
                         p, check_check=0)
                     if king.position in hypo_possibilities:
-                        puts_you_in_check = 1
+                        in_check = 1
                         break
-
                 del hypo_board
-                if not puts_you_in_check:
+                
+                # in check?
+                if not in_check:
                     possibilities.append(new_position)
 
-        #print '%s possibilities: %s: %s' % (self.name, piece, possibilities)
         return possibilities
 
-    def getMoveDestination(self, piece, move, captureable_only=0):
-        '''Given a piece on the board, and a move instruction
+    def getMoveDestination(self, piece, move_op, captureable_only=0):
+        '''Given a piece on the board, and a move_op instruction
            Return the destination postion after the move
-             or None if the move is not possible.
+             or None if the move_op is not possible.
         '''
         x,y = position2xy(piece.position)
-        direction, dist = move
+        direction, dist = move_op
 
         x2 = x
         y2 = y
 
         new_positions = []
         vector = 1 if piece.color == 'w' else -1
-        dists = range(1,8) if dist == '*' else [int(dist)]
+        dists = range(1, 8) if dist == '*' else range(1, int(dist)+1)
         for d in dists:
-            
+
             if captureable_only:
-                if piece.char == 'p' and direction == 'f':
+                if piece.char == 'P' and direction == 'f':
                     continue
-                                                     
+   
             vdist = vector * d
-            # orthonal movements
+            # orthonal move_op
             if direction == 'f':
                 y2 = y + vdist
             elif direction == 'b':
@@ -291,7 +247,7 @@ class Board(object):
             elif direction == 'r':
                 x2 = x + vdist
 
-            # diagonal movements
+            # diagonal move_op
             elif direction == 'd':
                 x2 = x - vdist; y2 = y + vdist
             elif direction == 'e':
@@ -301,7 +257,7 @@ class Board(object):
             elif direction == 'h':
                 x2 = x + vdist; y2 = y - vdist
 
-            # knight L-move
+            # knight L-move_op
             elif direction == 'i':
                 x2 = x - vdist*2; y2 = y + vdist
             elif direction == 'j':
@@ -337,7 +293,7 @@ class Board(object):
                     if piece2:
                         break
                 else:
-                    # diagonal move
+                    # diagonal move_op
                     if not piece2 or piece2.color == piece.color:
                         break
 
