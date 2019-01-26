@@ -67,8 +67,6 @@ class Piece(object):
         self.postion = None
 
     def __repr__(self):
-        #return '%s-%s' %(self.char if self.color == 'w' else self.char.upper(),
-       #                  self.position)
         return '%s:%s%s' %(self.color, self.char, self.position)
 
     @property
@@ -77,7 +75,7 @@ class Piece(object):
 
     @property
     def char_glyph(self):
-        return self.char if self.color == 'w' else self.char.upper()
+        return self.char.lower() if self.color == 'w' else self.char
 
     @property
     def glyph(self):
@@ -108,6 +106,9 @@ class Pawn(Piece):
             _move_ops[-1] = 'f2'
         return _move_ops
         
+    def __repr__(self):
+        return '%s:%s' %(self.color, self.position)
+
 class Knight(Piece):
     char = 'N'
     value = 3

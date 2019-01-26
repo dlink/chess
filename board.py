@@ -167,7 +167,7 @@ class Board(object):
         #            check      = check,
         #            check_mate = check_mate)
         
-        return piece, orig_position, check, check, check_mate
+        return piece, check, check, check_mate
 
     def possibleMoves(self, piece, check_check=1, captureable_only=0):
         '''Given a piece on the board

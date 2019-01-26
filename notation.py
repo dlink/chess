@@ -11,6 +11,7 @@ class Notation(object):
         '''Given a piece's original position, and piece already played
            Return an algebraic notation expression
         '''
+
         if piece.char == 'P':
             an = piece.position
         else:
@@ -50,29 +51,29 @@ class Notation(object):
 
         # Preprocessing
         print 'an:', an
+        if len(an) < 2:
+            raise NotationError('Invalid notation: %s' % an)
+
         # check  checks: +
         if an[-1] == '+':
-            print 'check'
             check = 1
             an = an[0:-1]
             
         # check check make: #
         elif an[-1] == '#':
-            print 'checkmate'
             checkmate = 1
             an = an[0:-1]
 
         # check captures
         if an[1] == 'x':
-            print 'capture'
             capture = 1
             an = an[0] + an[2:]
             # pawns
             if an[0].upper() != an[0]:
+                if an[0] not in 'abcdefgh':
+                    raise NotationError('Unrecognized first leter: %s' % an[0])
                 an = an[1:]
-            print 'new an:', an
         elif len(an) >= 3 and an[2] == 'x':
-            print 'capture'
             capture = 1
             an = an[0:1] + an[3:]
 
@@ -95,7 +96,7 @@ class Notation(object):
             print 'Promotion to: %s' % piece_char
             return piece, position
 
-        # Three chars, eq. Nc3
+        # Two or three chars, eq. Nc3
         if num_char in (2, 3):
             if num_char == 2:
                 piece_char = 'P'

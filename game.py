@@ -7,7 +7,7 @@ from copy import deepcopy
 from random import randint, seed
 
 from board import Board
-from notation import Notation
+from notation import Notation, NotationError
 from strategy import Strategy
 
 class GameError(Exception): pass
@@ -29,7 +29,7 @@ class Game(object):
         o = []
         for i, move in enumerate(self.history):
             o.append('%s. %s %s' % (i+1, move[0], move[1]))
-        return ', '.join(o)
+        return ' '.join(o)
 
     def playWhite(self):
         os.system('clear')
@@ -66,6 +66,8 @@ class Game(object):
         input_okay = 0
         while not input_okay:
             an = raw_input('Enter move, x to exit: ')
+            if not an:
+                continue
             if an.lower() == 'x':
                 self.endGame()
             try:
@@ -73,7 +75,7 @@ class Game(object):
                 orig_position = piece.position
                 piece, capture, check, check_mate \
                     = self.board.movePiece(piece, position)
-            except Exception, e:
+            except NotationError, e:
                 print str(e)
                 continue
             input_okay = 1
@@ -189,6 +191,7 @@ class Game(object):
 
     def user_pause(self):
         input = raw_input('Enter to continue, X to exit ')
+        
         if input.lower() == 'x':
             self.endGame()
 
