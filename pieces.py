@@ -30,30 +30,6 @@ class Pieces(object):
             return King(color)
         else:
             raise PiecesError('Unrecognzied piece abbreviation: %s' % char)
-    @staticmethod
-    def create0(char):
-        '''Given a char representation of a piece
-           Return instantiated Piece object of that type
-           Colors: chars lowercase = white
-                   chars uppercase = black
-        '''
-        orig_char = char
-        char = char.lower()
-        color = 'w' if char == orig_char else 'b'
-        if char == 'p':
-            return Pawn(color)
-        elif char == 'n':
-            return Knight(color)
-        elif char == 'b':
-            return Bishop(color)
-        elif char == 'r':
-            return Rook(color)
-        elif char == 'q':
-            return Queen(color)
-        elif char == 'k':
-            return King(color)
-        else:
-            raise PiecesError('Unrecognzied piece abbreviation: %s' %orig_char)
 
 class PieceError(Exception): pass
 

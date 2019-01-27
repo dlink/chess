@@ -42,7 +42,7 @@ class Strategy(object):
                 piece, check_check=0, captureable_only=1)
             
             # development
-            if piece.char in ('r', 'n', 'b', 'q'):
+            if piece.char in ('R', 'N', 'B', 'Q'):
                 white_development += len(possibilities)
                 
             # center control
@@ -56,7 +56,7 @@ class Strategy(object):
             possibilities = self.board.possibleMoves(
                 piece, check_check=0, captureable_only=1)
             # development
-            if piece.char in ('r', 'n', 'b', 'q'):
+            if piece.char in ('R', 'N', 'B', 'Q'):
                 black_development  += len(possibilities)
 
             # center_control
@@ -85,7 +85,7 @@ class Strategy(object):
             white += len(self.board.possibleMoves(piece, check_check=0))
         black = 0
         for piece in self.board.getActivePieces('b'):
-            if piece.char in ('r', 'n', 'b', 'q'):
+            if piece.char in ('R', 'N', 'B', 'Q'):
                 black += len(self.board.possibleMoves(piece, check_check=0))
         print 'white-black:', white, black
         diff = white - black
