@@ -23,7 +23,8 @@ class Notation(object):
     def __init__(self, board):
         self.board = board
 
-    def getNotation(self, orig_position, piece, capture, check, check_mate):
+    def getNotation(self, orig_position, piece, capture, castled, check,
+                    check_mate):
         '''Given a piece's original position, and piece already played
            Return an algebraic notation expression
         '''
@@ -31,18 +32,20 @@ class Notation(object):
         # TO DO: check if another piece of this type could also have moved
         #        to the same postion
 
-        # TO DO: handle castle notation.   Kg1 --> 0-0
+        if castled:
+            return castled
+    
         if piece.char == 'P':
             an = piece.position
         else:
             an = piece.char + piece.position
-        
+
         if capture:
             if len(an) == 2:
                 an = orig_position[0] + 'x' + an
             else:
                 an = an[0] + 'x' + an[1:]
-        elif check:
+        if check:
             an += '+'
         elif check_mate:
             an += '#'

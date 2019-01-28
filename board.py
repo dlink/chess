@@ -187,7 +187,8 @@ class Board(object):
         capture = 0
         check = 0
         check_mate = 0
-        
+        castled = 0
+
         # init in_check
         self.in_check[piece.opposite_color] = 0
 
@@ -250,9 +251,12 @@ class Board(object):
                 if position == 'b%s' % f:
                     rpos1, rpos2 = 'a%s' % f, 'c%s' % f
                     self.rook_moved[piece.color]['a'] = 1
+                    castled = '0-0-0'
                 elif position == 'g%s' % f:
                     rpos1, rpos2 = 'h%s' % f, 'f%s' % f
                     self.rook_moved[piece.color]['h'] = 1
+                    castled = '0-0'
+                # perform castle
                 if rpos1:
                     x1,y1 = position2xy(rpos1)
                     x2,y2 = position2xy(rpos2)
@@ -268,7 +272,7 @@ class Board(object):
                 self.rook_moved[piece.color][orig_file] = 1
 
         move = self.notation.getNotation(orig_position, piece, capture,
-                                         check, check_mate)
+                                         castled, check, check_mate)
         
         # record history
         if piece.color == 'w':
