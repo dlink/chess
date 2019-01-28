@@ -192,21 +192,21 @@ class Board(object):
             for new_position in new_positions:
 
                 # build hypothetical board and make move on it.
-                hypo_board = deepcopy(self)
-                hypo_board.name = 'hypo_board'
-                hypo_piece = hypo_board.getPieceAt(piece.position)
-                hypo_board.movePiece(hypo_piece, new_position, check_legal=0,
+                hboard = deepcopy(self)
+                hboard.name = 'hboard'
+                hpiece = hboard.getPieceAt(piece.position)
+                hboard.movePiece(hpiece, new_position, check_legal=0,
                                      check_check=0)
                 # check opponent's possible moves 
                 in_check = 0
-                king = hypo_board.getPiece('K', hypo_piece.color)
-                for p in hypo_board.getActivePieces(hypo_piece.opposite_color):
-                    hypo_possibilities = hypo_board.possibleMoves(
+                king = hboard.getPiece('K', hpiece.color)
+                for p in hboard.getActivePieces(hpiece.opposite_color):
+                    hpossibilities = hboard.possibleMoves(
                         p, check_check=0)
-                    if king.position in hypo_possibilities:
+                    if king.position in hpossibilities:
                         in_check = 1
                         break
-                del hypo_board
+                del hboard
                 
                 # in check?
                 if not in_check:
