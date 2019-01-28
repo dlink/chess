@@ -31,6 +31,7 @@ class Notation(object):
         # TO DO: check if another piece of this type could also have moved
         #        to the same postion
 
+        # TO DO: handle castle notation.   Kg1 --> 0-0
         if piece.char == 'P':
             an = piece.position
         else:
@@ -61,6 +62,7 @@ class Notation(object):
         # castle
         if an in ('0-0', '0-0-0'):
             # TO DO: move the validation into Board
+            # TO DO: see if castle moves thru any checks
             if self.board.king_moved[color]:
                 raise NotationError('N6: King can no longer castle')
             file_ = 1 if color == 'w' else 8
