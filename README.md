@@ -48,9 +48,6 @@ A game in progress
       ╚═══╧═══╧═══╧═══╧═══╧═══╧═══╧═══╝
         a   b   c   d   e   f   g   h
     1. e4 e6 2. d4 Qg5 3. Bxg5 Nc6 4. Nf3 Nf6
-    Material Advantage: 9:0
-    Development Advantage: 5:0
-    Center Control Advantage: 0:3
     
     Enter move, x to exit:
 
