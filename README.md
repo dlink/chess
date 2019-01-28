@@ -1,12 +1,14 @@
-First steps
+A chess program
 
-Initial output of initializing the board, and using standard setup
-
+    $./game.py h c
+    
+    You play white
+    
         a   b   c   d   e   f   g   h
       ╔═══╤═══╤═══╤═══╤═══╤═══╤═══╤═══╗
-    8 ║ R │ N │ B │ Q │ K │ B │ N │ R ║ 8
+    8 ║ ♜ │ ♞ │ ♝ │ ♛ │ ♚ │ ♝ │ ♞ │ ♜ ║ 8
       ╟───┼───┼───┼───┼───┼───┼───┼───╢
-    7 ║ P │ P │ P │ P │ P │ P │ P │ P ║ 7
+    7 ║ ♟ │ ♟ │ ♟ │ ♟ │ ♟ │ ♟ │ ♟ │ ♟ ║ 7
       ╟───┼───┼───┼───┼───┼───┼───┼───╢
     6 ║   │   │   │   │   │   │   │   ║ 6
       ╟───┼───┼───┼───┼───┼───┼───┼───╢
@@ -16,9 +18,11 @@ Initial output of initializing the board, and using standard setup
       ╟───┼───┼───┼───┼───┼───┼───┼───╢
     3 ║   │   │   │   │   │   │   │   ║ 3
       ╟───┼───┼───┼───┼───┼───┼───┼───╢
-    2 ║ p │ p │ p │ p │ p │ p │ p │ p ║ 2
+    2 ║ ♙ │ ♙ │ ♙ │ ♙ │ ♙ │ ♙ │ ♙ │ ♙ ║ 2
       ╟───┼───┼───┼───┼───┼───┼───┼───╢
-    1 ║ r │ n │ b │ q │ k │ b │ n │ r ║ 1
+    1 ║ ♖ │ ♘ │ ♗ │ ♕ │ ♔ │ ♗ │ ♘ │ ♖ ║ 1
       ╚═══╧═══╧═══╧═══╧═══╧═══╧═══╧═══╝
         a   b   c   d   e   f   g   h
-    
+    Enter move, x to exit:
+
+
