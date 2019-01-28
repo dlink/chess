@@ -13,9 +13,7 @@ import sys
 from copy import deepcopy
 from random import randint
 
-from vlib.cli import CLI
 from cli import CLI
-
 from board import Board, BoardError
 from notation import NotationError
 from strategy import Strategy
