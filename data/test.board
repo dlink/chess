@@ -1,8 +1,6 @@
-k-h1
-r-h3
-p-b7
-R-a8
-K-e8
-R-f8
-R-h8
-P-c2
+# standard board
+
+w:Ke1
+
+b:Rd8
+b:Ke8
