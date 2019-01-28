@@ -3,22 +3,57 @@
 import os
 import sys
 from copy import deepcopy
-
 from random import randint, seed
 
-from board import Board
+from vlib.cli import CLI
+from cli import CLI
+
+from board import Board, BoardError
 from notation import Notation, NotationError
 from strategy import Strategy
 
+class GameCLIError(Exception): pass
+
+class GameCLI(object):
+    '''Game Command Line Interface'''
+
+    def run(self):
+        '''Setup ommands and options. Launch CLI process'''
+
+        commands = ['<white:h> <black:c> <board:standard>']
+        self.cli = CLI(self.process, commands)
+        self.cli.process()
+
+    def process(self, *args):
+        '''Process all Incoming Requests'''
+
+        white = 'h'
+        black = 'c'
+        board = 'standard'
+        
+        args = list(args)
+        if len(args) == 1:
+            white = args.pop(0)
+        elif len(args) == 2:
+            white = args.pop(0)
+            black = args.pop(0)
+        elif len(args) == 3:
+            white = args.pop(0)
+            black = args.pop(0)
+            board = args.pop(0)
+            
+        game = Game(white, black, board)
+        game.play()
+        
 class GameError(Exception): pass
 
 class Game(object):
-    def __init__(self):
+    
+    def __init__(self, white, black, board):
+        self.white = white
+        self.black = black
         self.board = Board(display_type='standard',
-                           #setup_data='data/test.board'
-                           #setup_data='data/2rooks_and_kings.board'
-                           setup_data='data/standard2.board'
-        )
+                           setup_data='data/%s.board' % board)
         self.notation = Notation(self.board)
         self.state = [self.board, '']
         self.history = []
@@ -31,6 +66,19 @@ class Game(object):
             o.append('%s. %s %s' % (i+1, move[0], move[1]))
         return ' '.join(o)
 
+    def play(self):
+        white = self.white
+        black = self.black
+        if white == 'h' and black == 'c':
+            self.playBlack()
+        elif white == 'c' and black == 'h':
+            self.playWhite()
+        elif white == 'c' and black == 'c':
+            self.selfPlay()
+        else:
+            raise GameError('unrecognized white and black options: %s, %s. '
+                            'Should be h c, c h, or c c' % white, black)
+    
     def playWhite(self):
         os.system('clear')
         print 'You Play Black'
@@ -75,7 +123,7 @@ class Game(object):
                 orig_position = piece.position
                 piece, capture, check, check_mate \
                     = self.board.movePiece(piece, position)
-            except NotationError, e:
+            except (NotationError, BoardError), e:
                 print str(e)
                 continue
             input_okay = 1
@@ -200,7 +248,4 @@ class Game(object):
         sys.exit(0)
 
 if __name__ == '__main__':
-    game = Game()
-    #game.selfPlay()
-    #game.playWhite()
-    game.playBlack()
+    GameCLI().run()
