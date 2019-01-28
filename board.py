@@ -196,6 +196,28 @@ class Board(object):
             if position not in self.possibleMoves(piece):
                 raise BoardError('B2: Invalid Move: %s can not move to %s' %
                                  (piece, position))
+
+        # check for disambuguity
+        disambiguous = ''
+        ambiguous_pieces = []
+        ambiguous_files = []
+        ambiguous_rows = []
+        for p in self.getActivePieces(piece.color):
+            if p != piece and p.char == piece.char:
+                if position in self.possibleMoves(p, check_check=0):
+                    if self.name == 'board':
+                        print self.name, 'p:', p
+                        ambiguous_pieces.append(p)
+                        ambiguous_files.append(p.position[0])
+                        ambiguous_rows.append(p.position[1])
+        if ambiguous_pieces:
+            if piece.position[0] not in ambiguous_files:
+                disambiguous = piece.position[0]
+            elif piece.position[1] not in ambiguous_rows:
+                disambiguous = piece.position[1]
+            else:
+                disambiguous = piece.position
+            
         # remove piece from the board
         x,y = position2xy(piece.position)
         self.matrix[y][x] = None
@@ -271,8 +293,8 @@ class Board(object):
             if orig_file in ('a', 'h'):
                 self.rook_moved[piece.color][orig_file] = 1
 
-        move = self.notation.getNotation(orig_position, piece, capture,
-                                         castled, check, check_mate)
+        move = self.notation.getNotation(orig_position, piece, disambiguous,
+                                         capture, castled, check, check_mate)
         
         # record history
         if piece.color == 'w':

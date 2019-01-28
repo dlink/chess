@@ -23,23 +23,20 @@ class Notation(object):
     def __init__(self, board):
         self.board = board
 
-    def getNotation(self, orig_position, piece, capture, castled, check,
-                    check_mate):
+    def getNotation(self, orig_position, piece, disambiguous, capture,
+                    castled, check, check_mate):
         '''Given a piece's original position, and piece already played
            Return an algebraic notation expression
         '''
-
-        # TO DO: check if another piece of this type could also have moved
-        #        to the same postion
 
         if castled:
             return castled
     
         if piece.char == 'P':
-            an = piece.position
+            an = disambiguous + piece.position
         else:
-            an = piece.char + piece.position
-
+            an = piece.char + disambiguous + piece.position
+            
         if capture:
             if len(an) == 2:
                 an = orig_position[0] + 'x' + an
@@ -137,13 +134,33 @@ class Notation(object):
             return piece, position
 
         # Two or three chars, eq. Nc3
-        if num_char in (2, 3):
+        if num_char in (2, 3, 4, 5):
+            file_ = None
+            row = None
             if num_char == 2:
+                # e4
                 piece_char = 'P'
                 position = an
-            else:
+            elif num_char == 3:
+                # Nc3
                 piece_char = an[0]
                 position = an[1:]
+            elif num_char == 4:
+                # Rad1
+                piece_char = an[0]
+                file_ = an[1]
+                if file_.isdigit():
+                    # R1d1
+                    row = file_
+                    file_ = None
+                position = an[2:]
+            else:
+                # Qc1c3
+                piece_char = an[0]
+                file_ = an[1]
+                row = an[2]
+                position = an[3:]
+        
             if piece_char not in Pieces.piece_chars:
                 raise NotationError('N3: Invalid notation: Unrecognized '
                                     'piece char: %s' % orig_an)
@@ -159,8 +176,37 @@ class Notation(object):
             elif len(pos_pieces) == 1:
                 piece = pos_pieces[0]
             else:
-                raise NotationError('N5: Ambiguous move: %s: (%s)' %
-                                    (an, ', '.join(map(str, pos_pieces))))
+                # TO DO deal with file and row disambiguities
+                # Eq.
+                #    pieces: w:Qc1, w:Qc5, w:Qe5
+                #    move Qc1c3
+                
+                # disambiguity
+                if file_ and not row:
+                    pos_file_pieces = [p for p in pos_pieces
+                                       if p.position[0] == file_]
+                    if len(pos_file_pieces) == 1:
+                        piece = pos_file_pieces[0]
+                    else:
+                        raise NotationError(
+                            'N5b: Ambiguous move: %s: (%s)' %
+                            (an, ', '.join(map(str, pos_file_pieces))))
+                    
+                elif row and not file_:
+                    pos_row_pieces = [p for p in pos_pieces
+                                      if p.position[1] == row]
+                    if len(pos_row_pieces) == 1:
+                        piece = pos_row_pieces[0]
+                    else:
+                        raise NotationError(
+                            'N5c: Ambiguous move: %s: (%s)' %
+                            (an, ', '.join(map(str, pos_row_pieces))))
+                elif file_ and row:
+                    orig_position = an[1:3]
+                    piece = self.board.getPieceAt(orig_position)
+                else:
+                    raise NotationError('N5: Ambiguous move: %s: (%s)' %
+                                        (an, ', '.join(map(str, pos_pieces))))
             return piece, position
         
         raise NotationError('N1: Invalid notation: %s' % an)
