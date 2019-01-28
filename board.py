@@ -85,7 +85,8 @@ class Board(object):
         self.display.type = display_type
         self.notation = Notation(self)
         self.history = []
-            
+        self.last_move_position = None
+
     def __repr__(self):
         return self.display.one_line()
 
@@ -274,7 +275,8 @@ class Board(object):
             self.history.append([move,''])
         else:
             self.history[-1][1] = move
-                
+        self.last_move_position = piece.position
+        
         return move
 
     def possibleMoves(self, piece, check_check=1, captureable_only=0):

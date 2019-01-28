@@ -76,6 +76,7 @@ class Display(object):
              ╚═══╧═══╧═══╧═══╧═══╧═══╧═══╧═══╝
                a   b   c   d   e   f   g   h
         '''
+
         o = ''
         o += '    a   b   c   d   e   f   g   h\n'
         o += '  ╔═══' + '╤═══' * 7 + '╗\n'
@@ -83,7 +84,13 @@ class Display(object):
 
             # row with pieces
             o += '%s ║' % (8-i)
-            o += '│'.join(' %s ' % (p.glyph if p else ' ') for p in row)
+            row2 = []
+            for p in row:
+                f1, f2 = ' ', ' '
+                if p and p.position == self.board.last_move_position:
+                    f1, f2 = '*', '*'
+                row2.append('%s%s%s' % (f1, p.glyph if p else ' ', f2))
+            o += '|'.join(row2)
             o += '║ %s' % (8-i)
 
             # show captured pieces
@@ -102,4 +109,5 @@ class Display(object):
             else:
                 o += '  ╚═══' + '╧═══' * 7 + '╝ \n'
                 o += '    a   b   c   d   e   f   g   h'
+
         return o
