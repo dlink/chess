@@ -1,8 +1,24 @@
 '''Chess Algebraic Notation Module'''
 
+from pieces import Pieces
+
 class NotationError(Exception): pass
 
 class Notation(object):
+    '''Preside over Chess Algebraic Notation
+
+    Errors Raised
+    
+    N1: Invalid notation: %s
+    N2: Invalid notation, too short: %s
+    N2: Unrecognized file letter: %s
+    N3: Invalid notation: Unrecognized 
+    N4: Move not possible: %s
+    N5: Ambiguous move: %s: (%s)
+    N6: King can no longer castle
+    N7: King can not in its starting square
+    N8: Illegal move, promotion: %s
+    '''
 
     def __init__(self, board):
         self.board = board
@@ -19,8 +35,6 @@ class Notation(object):
             an = piece.position
         else:
             an = piece.char + piece.position
-        #else:
-        #    an = '%s^%s' % (orig_position, piece)
         
         if capture:
             if len(an) == 2:
@@ -45,17 +59,33 @@ class Notation(object):
         capture = 0
 
         # castle
-        if an == '0-0':
-            print 'King side castle'
-            return 'pending'
-        if an == '0-0-0':
-            print 'Queen side castle'
-            return 'pending'
+        if an in ('0-0', '0-0-0'):
+            # TO DO: move the validation into Board
+            if self.board.king_moved[color]:
+                raise NotationError('N6: King can no longer castle')
+            file_ = 1 if color == 'w' else 8
+            rook_row = 'h' if an == '0-0' else 'a'
+            piece = self.board.getPiece('K', color)
+            rook = self.board.getPieceAt('%s%s' % (rook_row, file_))
+            if not rook:
+                raise NotationError('N7b: Can not castle: missing rook')
+            print color, rook_row, self.board.rook_moved[color]
+            if self.board.rook_moved[color][rook_row]:
+                raise NotationError('N7c: Can not castle: rook has already '
+                                    'moved')
+                              
+            if piece.position != 'e%s' % file_:
+                raise NotationError('N7: King can not in its starting square')
+            if an == '0-0':
+                position = 'g%s' % file_
+            else:
+                position = 'b%s' % file_
+            return piece, position
 
         # Preprocessing
         print 'an:', an
         if len(an) < 2:
-            raise NotationError('Invalid notation: %s' % an)
+            raise NotationError('N2: Invalid notation, too short: %s' % an)
 
         # check  checks: +
         if an[-1] == '+':
@@ -74,7 +104,8 @@ class Notation(object):
             # pawns
             if an[0].upper() != an[0]:
                 if an[0] not in 'abcdefgh':
-                    raise NotationError('Unrecognized first leter: %s' % an[0])
+                    raise NotationError('N2: Unrecognized file letter: %s' %
+                                        an[0])
                 an = an[1:]
         elif len(an) >= 3 and an[2] == 'x':
             capture = 1
@@ -95,7 +126,8 @@ class Notation(object):
             vector = -1 if color == 'w' else 1
             piece = self.board.matrix[y+vector][x]
             if not piece or piece.color != color:
-                raise NotationError('Illegal move: %s' % orig_an)
+                raise NotationError('N8: Illegal move, promotion: %s' %
+                                    orig_an)
             print 'Promotion to: %s' % piece_char
             return piece, position
 
@@ -107,6 +139,9 @@ class Notation(object):
             else:
                 piece_char = an[0]
                 position = an[1:]
+            if piece_char not in Pieces.piece_chars:
+                raise NotationError('N3: Invalid notation: Unrecognized '
+                                    'piece char: %s' % orig_an)
             pos_pieces = []
             for piece in self.board.getActivePieces(color):
                 if piece.char == piece_char:
@@ -115,15 +150,15 @@ class Notation(object):
                             pos_pieces.append(piece)
                             break
             if not pos_pieces:
-                raise NotationError('Move not possible: %s' % orig_an)
+                raise NotationError('N4: Move not possible: %s' % orig_an)
             elif len(pos_pieces) == 1:
                 piece = pos_pieces[0]
             else:
-                raise NotationError('Ambiguous move: %s: (%s)' %
+                raise NotationError('N5: Ambiguous move: %s: (%s)' %
                                     (an, ', '.join(map(str, pos_pieces))))
             return piece, position
         
-        raise NotationError('Unrecognzied notation: %s' % an)
+        raise NotationError('N1: Invalid notation: %s' % an)
         
 def xy2position(x, y):
     file_ = y+1

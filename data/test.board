@@ -1,6 +1,11 @@
-# standard board
+# test board
 
+w:Ra1
 w:Ke1
+w:Rh1
+w:Pa2
+w:Ph2
 
-b:Rd8
+b:Ra8
 b:Ke8
+b:Rh8

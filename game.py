@@ -138,22 +138,22 @@ class Game(object):
             for j, new_position in enumerate(
                     self.board.possibleMoves(piece, check_check=0)):
                 # build hypothetical board
-                hypo_board = deepcopy(self.board)
-                hypo_board.name = 'hypo_board2'
-                hypo_piece = hypo_board.getPieceAt(piece.position)
+                hboard = deepcopy(self.board)
+                hboard.name = 'hboard2'
+                hpiece = hboard.getPieceAt(piece.position)
                 # make the move
-                hypo_board.movePiece(hypo_piece, new_position, check_legal=0,
+                hboard.movePiece(hpiece, new_position, check_legal=0,
                                      check_check=0)
-                ma, da, cca = Strategy(hypo_board).evaluation2()
+                ma, da, cca = Strategy(hboard).evaluation2()
                 score = ma + da + cca
                 # try looking one more turn
                 '''
-                for hype_piece2 = hypo_board.getActivePieces(piece.opposite_color):
+                for hype_piece2 = hboard.getActivePieces(piece.opposite_color):
                     black_best_move = None
                     black_best_move_score = None
                     for m, new_position2 in enumerate(
-                            hypo_board.possibleMoves(hypo_piece2, check_check=0)):
-                        ma, da, cca = Strategy(hypo_board).evaluation2()
+                            hboard.possibleMoves(hpiece2, check_check=0)):
+                        ma, da, cca = Strategy(hboard).evaluation2()
                         sore = ma, da, cca
                         if piece.opposite_color == 'b':
                             score = -score
@@ -167,7 +167,7 @@ class Game(object):
                 if j == 0 or score > best_move_score:
                     best_move = new_position
                     best_move_score = score
-                del hypo_board
+                del hboard
             if not best_piece or best_move_score > best_piece_move_score:
                 best_piece = piece
                 best_piece_move = best_move

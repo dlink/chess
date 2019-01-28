@@ -35,11 +35,14 @@ class Board(object):
         self.captured = []
         self.in_check = {'w': 0, 'b': 0}
         self.check_mate = {'w': 0, 'b': 0}
+        self.king_moved = {'w': 0, 'b': 0}
+        self.rook_moved = {'w': {'a': 0, 'h': 0},
+                           'b': {'a': 0, 'h': 0}}
         self.setup()
         self.display = Display(self)
         self.display.type = display_type
         self.notation = Notation(self)
-
+            
     def __repr__(self):
         return self.display.one_line()
 
@@ -81,7 +84,8 @@ class Board(object):
                     return piece
                 if piece.position[0] == file_:
                     return piece
-        raise BoardError('Could not find piece: %s, %s' % (orig_char, color))
+        raise BoardError('B3: Could not find piece: %s, %s' %
+                         (orig_char, color))
 
     def getActivePieces(self, color):
         return [p for p in self.pieces
@@ -110,8 +114,8 @@ class Board(object):
            promote pawns
            Sets pieces position attr to the new position
         '''
-        orig_position = piece.postion
-        
+        orig_position = piece.position
+
         capture = 0
         check = 0
         check_mate = 0
@@ -121,7 +125,7 @@ class Board(object):
 
         if check_legal:
             if position not in self.possibleMoves(piece):
-                raise BoardError('Invalid Move: %s can not move to %s' %
+                raise BoardError('B2: Invalid Move: %s can not move to %s' %
                                  (piece, position))
         # remove piece from the board
         x,y = position2xy(piece.position)
@@ -165,6 +169,36 @@ class Board(object):
                 else:
                     self.check_mate[piece.opposite_color] = 1
                     check_mate = 1
+
+        # king move?
+        if piece.char == 'K':
+            # mark king moved
+            self.king_moved[piece.color] = 1
+            
+            # castling? move rook, too
+            f = 1 if piece.color == 'w' else 8
+            if orig_position == 'e%s' % f:
+                rpos1, rpos2 = None, None
+                if position == 'b%s' % f:
+                    rpos1, rpos2 = 'a%s' % f, 'c%s' % f
+                    self.rook_moved[piece.color]['a'] = 1
+                elif position == 'g%s' % f:
+                    rpos1, rpos2 = 'h%s' % f, 'f%s' % f
+                    self.rook_moved[piece.color]['h'] = 1
+                if rpos1:
+                    x1,y1 = position2xy(rpos1)
+                    x2,y2 = position2xy(rpos2)
+                    rook = self.getPieceAt(rpos1)
+                    self.matrix[y1][x1] = None
+                    self.matrix[y2][x2] = rook
+                    rook.position = rpos2
+
+        # did rooks move?
+        if piece.char == 'R':
+            orig_file = orig_position[0]
+            if orig_file in ('a', 'h'):
+                self.rook_moved[piece.color][orig_file] = 1
+            
         return self.notation.getNotation(orig_position, piece, capture,
                                          check, check_mate)
 
@@ -173,7 +207,6 @@ class Board(object):
            Return a list of possible positions it can move to
         '''
         # TO DO: Why do we need captureable_only flag?
-        # TO DO: handle castling
         
         if not piece:
             return []
@@ -210,7 +243,7 @@ class Board(object):
                 # in check?
                 if not in_check:
                     possibilities.append(new_position)
-
+        
         return possibilities
 
     def getMoveDestination(self, piece, move_op, captureable_only=0):
@@ -274,8 +307,14 @@ class Board(object):
             elif direction == 'q':
                 x2 = x - vdist*2; y2 = y - vdist
 
+            # king castle
+            elif direction == 'y':
+                x2 = x - 3; y2 = y
+            elif direction == 'z':
+                x2 = x + 2; y2 = y
             else:
-                raise BoardError('unknown movment direction: %s' % direction)
+                raise BoardError('B1: Unknown movment direction: %s' %
+                                 direction)
 
             # off the board:
             if y2 not in range(0, 8) or x2 not in range(0, 8):
@@ -303,7 +342,7 @@ class Board(object):
                         # can capture opponents piece
                         new_positions.append(new_position)
                     break
-
+                
             new_positions.append(new_position)
 
         return new_positions

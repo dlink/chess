@@ -9,6 +9,8 @@ class PiecesError(Exception): pass
 class Pieces(object):
     '''Preside of Pieces Objects'''
 
+    piece_chars = ['P', 'N', 'B', 'R', 'Q', 'K']
+    
     @staticmethod
     def create(char, color):
         '''Given a char representation of a piece, and a color (w,b)
@@ -86,24 +88,42 @@ class Pawn(Piece):
         return '%s:%s' %(self.color, self.position)
 
 class Knight(Piece):
+    #    j   k
+    #  i       m
+    #      .
+    #  q       n
+    #    p   o
+    
     char = 'N'
     value = 3
     glyphs = ['♘', '♞']
     move_ops = ['i1','j1','k1','m1','n1','o1','p1','q1']
 
 class Bishop(Piece):
+    #  d   e
+    #    .
+    #  g   h
+    
     char = 'B'
     value = 3
     glyphs = ['♗', '♝']
-    move_ops = ['d*', 'e*', 'g*', 'h*']
+    move_ops = ['d*', 'e*', 'g*', 'h*'] 
 
 class Rook(Piece):
+    #    f 
+    #  r . l
+    #    b
+
     char = 'R'
     value = 5
     glyphs = ['♖', '♜']
     move_ops =['f*', 'b*', 'l*', 'r*']
 
 class Queen(Piece):
+    #  d f e
+    #  r . l
+    #  g b h
+    
     char = 'Q'
     value = 9
     glyphs = ['♕', '♛']
@@ -111,8 +131,13 @@ class Queen(Piece):
                 'd*', 'e*', 'g*', 'h*']
 
 class King(Piece):
+    #  d f e
+    #  r . l
+    #  g b h and y, z -> castle queen side, king side
+    
     char = 'K'
     value = 0
     glyphs = ['♔', '♚']
-    move_ops = ['f1', 'b1', 'l1', 'r1',
-                'd1', 'e1', 'g1', 'h1']
+    move_ops = ['f1', 'b1', 'l1', 'r1', # orthogonal
+                'd1', 'e1', 'g1', 'h1', # diaganal
+                'y1', 'z1']               # castle
