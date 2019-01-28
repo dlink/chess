@@ -5,6 +5,7 @@ from copy import deepcopy
 
 from pieces import Pieces, Queen
 from display import Display
+from notation import Notation
 
 SETUP_DATA = 'data/standard.board'
 DISPLAY_TYPE = 'standard'
@@ -37,6 +38,7 @@ class Board(object):
         self.setup()
         self.display = Display(self)
         self.display.type = display_type
+        self.notation = Notation(self)
 
     def __repr__(self):
         return self.display.one_line()
@@ -96,6 +98,11 @@ class Board(object):
         piece.position = position
         return piece
 
+    def move(self, an, color):
+        '''Make a move based on given Chess Algebraic Notation and color'''
+        piece, position = self.notation.getPieceAndDest(an, color)
+        return self.movePiece(piece, position)
+        
     def movePiece(self, piece, position, check_legal=1, check_check=1):
         '''Move a piece on the board to a given position
            confirm move is valid - if check_legal=1
@@ -103,6 +110,8 @@ class Board(object):
            promote pawns
            Sets pieces position attr to the new position
         '''
+        orig_position = piece.postion
+        
         capture = 0
         check = 0
         check_mate = 0
@@ -156,18 +165,8 @@ class Board(object):
                 else:
                     self.check_mate[piece.opposite_color] = 1
                     check_mate = 1
-        # TO DO: check if another piece of this type could also have moved
-        #        to the same postion
-        
-        # return move data
-        #return odic(piece_char = piece.char,
-        #            star_pos   = x,
-        #            end_pos    = piece.postion
-        #            capture    = capture,
-        #            check      = check,
-        #            check_mate = check_mate)
-        
-        return piece, check, check, check_mate
+        return self.notation.getNotation(orig_position, piece, capture,
+                                         check, check_mate)
 
     def possibleMoves(self, piece, check_check=1, captureable_only=0):
         '''Given a piece on the board

@@ -9,7 +9,7 @@ from vlib.cli import CLI
 from cli import CLI
 
 from board import Board, BoardError
-from notation import Notation, NotationError
+from notation import NotationError
 from strategy import Strategy
 
 class GameCLIError(Exception): pass
@@ -54,7 +54,6 @@ class Game(object):
         self.black = black
         self.board = Board(display_type='standard',
                            setup_data='data/%s.board' % board)
-        self.notation = Notation(self.board)
         self.state = [self.board, '']
         self.history = []
         self.moves = []
@@ -119,17 +118,13 @@ class Game(object):
             if an.lower() == 'x':
                 self.endGame()
             try:
-                piece, position = self.notation.getPieceAndDest(an, color)
-                orig_position = piece.position
-                piece, capture, check, check_mate \
-                    = self.board.movePiece(piece, position)
+                an = self.board.move(an, color)
             except (NotationError, BoardError), e:
                 print str(e)
                 continue
             input_okay = 1
-        return self.notation.getNotation(orig_position, piece, capture,
-                                         check, check_mate)
-
+        return an
+        
     def computerMove(self, color):
         best_piece = None
         best_piece_move = None
@@ -177,11 +172,9 @@ class Game(object):
                 best_piece = piece
                 best_piece_move = best_move
                 best_piece_move_score = best_move_score
-        orig_position = best_piece.position
-        piece, capture, check, check_mate \
-            = self.board.movePiece(best_piece, best_piece_move, check_legal=0)
-        return self.notation.getNotation(
-            orig_position, piece, capture, check, check_mate)
+        #orig_position = best_piece.position
+        an = self.board.movePiece(best_piece, best_piece_move, check_legal=0)
+        return an
                 
     def randomMove(self, color):
         pieces = self.board.getActivePieces(color)

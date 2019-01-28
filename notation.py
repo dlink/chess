@@ -12,6 +12,9 @@ class Notation(object):
            Return an algebraic notation expression
         '''
 
+        # TO DO: check if another piece of this type could also have moved
+        #        to the same postion
+
         if piece.char == 'P':
             an = piece.position
         else:
