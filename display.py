@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-class BoardDisplayError(Exception): pass
+class DisplayError(Exception): pass
 
-class BoardDisplay(object):
+class Display(object):
 
     def __init__(self, board):
         self.board = board
@@ -15,7 +15,7 @@ class BoardDisplay(object):
             return self.simple()
         elif self.type == 'one_line':
             return self.one_line()
-        raise BoardDisplayError('Unrecognized display type:' % self.type)
+        raise DisplayError('Unrecognized display type:' % self.type)
     
     def one_line(self):
         '''Return a representation of the board in one line

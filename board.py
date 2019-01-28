@@ -4,7 +4,7 @@ import re
 from copy import deepcopy
 
 from pieces import Pieces, Queen
-from board_display import BoardDisplay
+from display import Display
 
 SETUP_DATA = 'data/standard.board'
 DISPLAY_TYPE = 'standard'
@@ -35,7 +35,7 @@ class Board(object):
         self.in_check = {'w': 0, 'b': 0}
         self.check_mate = {'w': 0, 'b': 0}
         self.setup()
-        self.display = BoardDisplay(self)
+        self.display = Display(self)
         self.display.type = display_type
 
     def __repr__(self):
