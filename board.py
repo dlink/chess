@@ -1,5 +1,20 @@
 #!/usr/bin/python
 
+'''Board Module
+
+   Control the state of the games board, legal moves, captures, checks and check mates
+   Uses Display module to display the board
+   Uses Notation module to understand chess standard notation (SAN). eq.: e4, Nc3, etc.
+
+   Example:
+
+   Create a chess board with standard piece setup, using a 'standard' display
+      board = Board()
+
+   Create a chess board with a rooks and pieces setup, using a 'simple' display type
+      board = Board('rooks_and_kings', 'standard')
+
+'''
 import re
 from copy import deepcopy
 
@@ -11,11 +26,24 @@ SETUP_DATA = 'data/standard.board'
 DISPLAY_TYPE = 'standard'
 
 def xy2position(x, y):
+    '''Given x and y as zero-indexed coordinates on the board
+       Return position in standard notation
+
+       eq.: 0, 0 --> a1
+            0, 7 --> a8
+            4, 3 --> e4
+    '''
     file_ = y+1
     row = chr(x+97)
     return '%s%s' % (row, file_)
 
 def position2xy(position):
+    '''Given a postion on the board in standard notation
+       Return x and y as zero-indexed coordinates on the board
+       eq.:
+         a1 --> 0, 0
+         e4 --> 4, 3
+    '''
     x = ord(position[0])-97 # convert a,b,c, ... -> 0,1,2, ...
     y = int(position[1])-1  # convert 1,2,3, ... -> 0,1,2, ...
     return x, y
@@ -23,10 +51,24 @@ def position2xy(position):
 class BoardError(Exception): pass
 
 class Board(object):
+    '''Preside over the Chess Board'''
 
     def __init__(self, setup_data=SETUP_DATA, display_type=DISPLAY_TYPE):
         '''Create the board matrix
-           Create the pieces sand add them to the board
+           Initializes board attributes
+           Calls setup() which, create the pieces and add them to the board
+
+           setup_data:  a filename which maps to data/<filename>.board 
+                        which uses color and standard notation to denote
+                        which pieces go where.
+                        eq.: w:a2 places a white Pawn on a2
+
+                        default is 'standard' which is a normal start
+                        game position.  you can create other types
+                        of setups.
+           display_type: Sets default display type supported by the Display
+                         module valid options at time of writing are:
+                         'standard', 'simple', and 'one_line'
         '''
         self.name = 'board'
         self.setup_data = setup_data
@@ -48,9 +90,9 @@ class Board(object):
 
     def setup(self):
         '''Set up the pieces on the board based self.setup_data'''
-
+        
+        # read setup data
         for row in open(self.setup_data).readlines():
-
             # ignore comments, skip blank lines
             row = re.sub('#.*', '', row).strip()
             if not row:
@@ -66,6 +108,9 @@ class Board(object):
             self.pieces.append(piece)
 
     def getPieceAt(self, position):
+        '''Given a postion in standard notation
+           Return Piece object on the board at that location or None
+        '''
         x, y = position2xy(position)
         return self.matrix[y][x]
 
@@ -88,14 +133,18 @@ class Board(object):
                          (orig_char, color))
 
     def getActivePieces(self, color):
+        '''Given a color char {'w', 'b'}
+           Return a list of all active pieces on the board of that color
+        '''
         return [p for p in self.pieces
                 if p.color == color and p.position != 'x']
 
     def placePiece(self, piece, position):
         '''Place a piece on the board at a given position
-             piece is a Piece Object
-             position is a str coordinate, eq.: a1
-           Behavior: Set piece's position to the new position
+             piece: a Piece Object
+             position:  string in standard notation, eq.: a1
+           Behavior: Also changes piece's position to the new position
+           Returns the Piece object
         '''
         x,y = position2xy(position)
         self.matrix[y][x] = piece
@@ -103,16 +152,25 @@ class Board(object):
         return piece
 
     def move(self, an, color):
-        '''Make a move based on given Chess Algebraic Notation and color'''
+        '''Given a chess move as a string in standard notation, and its color
+           Perform the move
+           Returns the move as a string in standard notation, which may
+              be different than the input. May add 'x', '+', or '#' to the move
+        '''
         piece, position = self.notation.getPieceAndDest(an, color)
         return self.movePiece(piece, position)
         
     def movePiece(self, piece, position, check_legal=1, check_check=1):
-        '''Move a piece on the board to a given position
-           confirm move is valid - if check_legal=1
-           perform captures if applicable
-           promote pawns
+        '''Given a piece object, and a position in standard notation
+           Perform the move.
+
+           Confirm move is valid - if check_legal=1
+           Perform captures if applicable
+           Promote pawns
+           checks for checks and check mates -- if check_chec
            Sets pieces position attr to the new position
+
+           Returns move as a string in standard notation
         '''
         orig_position = piece.position
 
@@ -204,7 +262,9 @@ class Board(object):
 
     def possibleMoves(self, piece, check_check=1, captureable_only=0):
         '''Given a piece on the board
-           Return a list of possible positions it can move to
+           Return a list of possible positions it can move to in 
+                  standard notation
+           Set check_check=0 when nec. to avoid infinate recursion
         '''
         # TO DO: Why do we need captureable_only flag?
         
@@ -248,8 +308,10 @@ class Board(object):
 
     def getMoveDestination(self, piece, move_op, captureable_only=0):
         '''Given a piece on the board, and a move_op instruction
-           Return the destination postion after the move
-             or None if the move_op is not possible.
+           Return  a list of destinatins it can move to based on
+             how the piece moves - regardless of what's legal on 
+             the current board.
+           See Piece Objects for how move_ops are defined.
         '''
         x,y = position2xy(piece.position)
         direction, dist = move_op

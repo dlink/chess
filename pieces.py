@@ -69,6 +69,9 @@ class Piece(object):
         return c
 
 class Pawn(Piece):
+    #  d f e
+    #    .
+
     char = 'P'
     value = 1
     glyphs = ['♙', '♟']
@@ -133,7 +136,7 @@ class Queen(Piece):
 class King(Piece):
     #  d f e
     #  r . l
-    #  g b h and y, z -> castle queen side, king side
+    #  g b h    and y, z -> castle queen side, king side
     
     char = 'K'
     value = 0

@@ -1,5 +1,14 @@
 #!/usr/bin/python
 
+'''Game Module
+
+   Example:
+
+   Play a game, human plays white against computer on a standard board
+     game = Game('h', 'w', 'standard')
+     game.play()
+'''
+
 import sys
 from copy import deepcopy
 from random import randint
