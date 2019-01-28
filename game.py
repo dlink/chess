@@ -38,18 +38,6 @@ class Game(object):
                         'b': black_player}
         self.board = Board(display_type='standard',
                            setup_data='data/%s.board' % board)
-        # TO DO: move history out of Game and into Board
-        self.history = []
-
-    def display_history(self):
-        '''Return a string of all moves made so far in standard algebraic
-           notation
-        '''
-        # TO DO: move this method into Board
-        o = []
-        for i, move in enumerate(self.history):
-            o.append('%s. %s %s' % (i+1, move[0], move[1]))
-        return ' '.join(o)
 
     def play(self):
         '''Start the game'''
@@ -80,13 +68,7 @@ class Game(object):
             print '  Check'
             #move = str(move) + '+'
 
-        # TO DO: move history maintanance into Board
-        if color == 'w':
-            self.history.append([move,''])
-        else:
-            self.history[-1][1] = move
-
-        print self.display_history()
+        print self.board.display_history()
         print Strategy(self.board).evaluation
         print
 

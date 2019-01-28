@@ -84,6 +84,7 @@ class Board(object):
         self.display = Display(self)
         self.display.type = display_type
         self.notation = Notation(self)
+        self.history = []
             
     def __repr__(self):
         return self.display.one_line()
@@ -106,6 +107,14 @@ class Board(object):
 
             self.placePiece(piece, position)
             self.pieces.append(piece)
+
+    def display_history(self):
+        '''Return a string of all moves made so far in standard notation'''
+
+        o = []
+        for i, move in enumerate(self.history):
+            o.append('%s. %s %s' % (i+1, move[0], move[1]))
+        return ' '.join(o)
 
     def getPieceAt(self, position):
         '''Given a postion in standard notation
@@ -256,9 +265,17 @@ class Board(object):
             orig_file = orig_position[0]
             if orig_file in ('a', 'h'):
                 self.rook_moved[piece.color][orig_file] = 1
-            
-        return self.notation.getNotation(orig_position, piece, capture,
+
+        move = self.notation.getNotation(orig_position, piece, capture,
                                          check, check_mate)
+        
+        # record history
+        if piece.color == 'w':
+            self.history.append([move,''])
+        else:
+            self.history[-1][1] = move
+                
+        return move
 
     def possibleMoves(self, piece, check_check=1, captureable_only=0):
         '''Given a piece on the board
