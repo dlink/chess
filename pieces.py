@@ -2,8 +2,6 @@
 
 # TO DO: make Pieces an abstract class
 
-# TO DO: use ascii chess chars, ie: ♖
-
 class PiecesError(Exception): pass
 
 class Pieces(object):

@@ -206,7 +206,6 @@ class Board(object):
             if p != piece and p.char == piece.char:
                 if position in self.possibleMoves(p, check_check=0):
                     if self.name == 'board':
-                        print self.name, 'p:', p
                         ambiguous_pieces.append(p)
                         ambiguous_files.append(p.position[0])
                         ambiguous_rows.append(p.position[1])
@@ -449,7 +448,11 @@ class Board(object):
                         # can capture opponents piece
                         new_positions.append(new_position)
                     break
-                
+
+            # validate castling
+            # TO DO - move castling valiation here from notate
+
+            
             new_positions.append(new_position)
 
         return new_positions
