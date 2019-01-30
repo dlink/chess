@@ -53,7 +53,8 @@ class BoardError(Exception): pass
 class Board(object):
     '''Preside over the Chess Board'''
 
-    def __init__(self, setup_data=SETUP_DATA, display_type=DISPLAY_TYPE):
+    def __init__(self, setup_data=SETUP_DATA, display_type=DISPLAY_TYPE,
+                 game_history=None):
         '''Create the board matrix
            Initializes board attributes
            Calls setup() which, create the pieces and add them to the board
@@ -86,6 +87,8 @@ class Board(object):
         self.notation = Notation(self)
         self.history = []
         self.last_move_position = None
+        if game_history:
+            self.loadHistory(game_history)
 
     def __repr__(self):
         return self.display.one_line()
@@ -108,7 +111,21 @@ class Board(object):
 
             self.placePiece(piece, position)
             self.pieces.append(piece)
+            
+    def loadHistory(self, history):
+        game_file = 'data/%s.game' % history
+        history = open(game_file, 'r').read()
 
+        print 'Running Game history:'
+        for i, an in enumerate(history.split(' ')):
+            print an,
+            if i % 3 == 0:
+                # skip turn numbers
+                continue
+            color = ['w', 'b'][i%3-1]
+            self.move(an, color)
+        print
+        
     def display_history(self):
         '''Return a string of all moves made so far in standard notation'''
 
@@ -241,25 +258,6 @@ class Board(object):
         piece.position = position
         self.matrix[y][x] = piece
 
-        # is this check?
-        if check_check:
-            opponent_king = self.getPiece('K', piece.opposite_color)
-            if opponent_king.position in self.possibleMoves(piece):
-                
-                # is this check mate?
-                has_escape = 0
-                for op_piece in self.getActivePieces(piece.opposite_color):
-                    op_possibilities = self.possibleMoves(op_piece)
-                    if op_possibilities:
-                        has_escape = 1
-                        break
-                if has_escape:
-                    self.in_check[opponent_king.color] = 1
-                    check = 1
-                else:
-                    self.check_mate[piece.opposite_color] = 1
-                    check_mate = 1
-
         # king move?
         if piece.char == 'K':
             # mark king moved
@@ -277,7 +275,7 @@ class Board(object):
                     rpos1, rpos2 = 'h%s' % f, 'f%s' % f
                     self.rook_moved[piece.color]['h'] = 1
                     castled = '0-0'
-                # perform castle
+                # move rook:
                 if rpos1:
                     x1,y1 = position2xy(rpos1)
                     x2,y2 = position2xy(rpos2)
@@ -291,6 +289,25 @@ class Board(object):
             orig_file = orig_position[0]
             if orig_file in ('a', 'h'):
                 self.rook_moved[piece.color][orig_file] = 1
+
+        # does this put opponent in check?
+        if check_check:
+            opponent_king = self.getPiece('K', piece.opposite_color)
+            if opponent_king.position in self.possibleMoves(piece):
+                
+                # is this check mate?
+                has_escape = 0
+                for op_piece in self.getActivePieces(piece.opposite_color):
+                    op_possibilities = self.possibleMoves(op_piece)
+                    if op_possibilities:
+                        has_escape = 1
+                        break
+                if has_escape:
+                    self.in_check[opponent_king.color] = 1
+                    check = 1
+                else:
+                    self.check_mate[piece.opposite_color] = 1
+                    check_mate = 1
 
         move = self.notation.getNotation(orig_position, piece, disambiguous,
                                          capture, castled, check, check_mate)
@@ -414,10 +431,10 @@ class Board(object):
                 x2 = x - vdist*2; y2 = y - vdist
 
             # king castle
-            elif direction == 'y':
-                x2 = x - 3; y2 = y
-            elif direction == 'z':
-                x2 = x + 2; y2 = y
+            elif direction == 'y': # queen side
+                x2 = x - 3; y2 = y 
+            elif direction == 'z': # king side
+                x2 = x + 2; y2 = y 
             else:
                 raise BoardError('B1: Unknown movment direction: %s' %
                                  direction)
@@ -440,18 +457,41 @@ class Board(object):
                     # diagonal move_op
                     if not piece2 or piece2.color == piece.color:
                         break
+                    
+            # handle castling
+            elif piece.char == 'K' and direction in ('y', 'z'):
+                # TO DO: see if castle moves thru any checks
+                if self.king_moved[piece.color]:
+                    break
+                row = 1 if piece.color == 'w' else 8
+                if direction == 'y':
+                    rook_file = 'a'
+                    intervening_files = 'bcd'
+                else:
+                    rook_file = 'h'
+                    intervening_files = 'fg'
+                if self.rook_moved[piece.color][rook_file]:
+                    break
+                king = self.getPieceAt('e%s' % row)
+                rook = self.getPieceAt('%s%s' % (rook_file, row))
+                if not king or not rook: # could happen on non standard boards
+                    break
+                there_are_intervening = 0
+                for file_ in intervening_files:
+                    if self.getPieceAt('%s%s' % (file_, row)):
+                        there_are_intervening = 1
+                        break
+                if there_are_intervening:
+                    break
 
             # pieces other than pawns
             else:
                 if piece2:
                     if piece2.color != piece.color:
                         # can capture opponents piece
+                        # TO DO: I think this is addding new_position twice
                         new_positions.append(new_position)
                     break
-
-            # validate castling
-            # TO DO - move castling valiation here from notate
-
             
             new_positions.append(new_position)
 

@@ -61,23 +61,8 @@ class Notation(object):
 
         # castle
         if an in ('0-0', '0-0-0'):
-            # TO DO: move the validation into Board
-            # TO DO: see if castle moves thru any checks
-            if self.board.king_moved[color]:
-                raise NotationError('N6: King can no longer castle')
-            file_ = 1 if color == 'w' else 8
-            rook_row = 'h' if an == '0-0' else 'a'
             piece = self.board.getPiece('K', color)
-            rook = self.board.getPieceAt('%s%s' % (rook_row, file_))
-            if not rook:
-                raise NotationError('N7b: Can not castle: missing rook')
-            print color, rook_row, self.board.rook_moved[color]
-            if self.board.rook_moved[color][rook_row]:
-                raise NotationError('N7c: Can not castle: rook has already '
-                                    'moved')
-                              
-            if piece.position != 'e%s' % file_:
-                raise NotationError('N7: King can not in its starting square')
+            file_ = 1 if color == 'w' else 8
             if an == '0-0':
                 position = 'g%s' % file_
             else:
@@ -85,7 +70,6 @@ class Notation(object):
             return piece, position
 
         # Preprocessing
-        print 'an:', an
         if len(an) < 2:
             raise NotationError('N2: Invalid notation, too short: %s' % an)
 

@@ -28,17 +28,19 @@ class Game(object):
          Algebraic Notation (SAN)
     '''
 
-    def __init__(self, white_player, black_player, board):
+    def __init__(self, white_player, black_player, board, game_history):
         '''Game constructor
             white player {'h'|'c'} (Human or Computer)
             black player {'h'|'c'} (Human or Computer)
             board - board set up data, eq.: 'standard'
+            game_history - a file containing game history to play on load
         '''
         self.players = {'w': white_player,
                         'b': black_player}
         self.board = Board(display_type='standard',
-                           setup_data='data/%s.board' % board)
-
+                           setup_data='data/%s.board' % board,
+                           game_history=game_history)
+            
     def play(self):
         '''Start the game'''
 
@@ -207,7 +209,7 @@ class GameCLI(object):
     def run(self):
         '''Setup ommands and options. Launch CLI process'''
 
-        commands = ['<white:h> <black:c> <board:standard>']
+        commands = ['<white:h> <black:c> <board:standard> <game_history:None>']
         self.cli = CLI(self.process, commands)
         self.cli.process()
 
@@ -217,19 +219,17 @@ class GameCLI(object):
         white = 'h'
         black = 'c'
         board = 'standard'
+        game_history = None
 
-        args = list(args)
-        if len(args) == 1:
-            white = args.pop(0)
-        elif len(args) == 2:
-            white = args.pop(0)
-            black = args.pop(0)
-        elif len(args) == 3:
-            white = args.pop(0)
-            black = args.pop(0)
-            board = args.pop(0)
+        white = args[0]
+        if len(args) > 1:
+            black = args[1]
+        if len(args) > 2:
+            board = args[2]
+        if len(args) > 3:
+            game_history = args[3]
 
-        game = Game(white, black, board)
+        game = Game(white, black, board, game_history)
         game.play()
 
 if __name__ == '__main__':
