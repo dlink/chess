@@ -61,12 +61,13 @@ class Game(object):
 
     def displayMove(self, move_color):#move, color):
         move, color = move_color
+        opposite_color = 'w' if color == 'b' else 'b'
         print
         print self.board.display.display()
-        if self.board.check_mate[color]:
+        if self.board.check_mate[opposite_color]:
             print '  CHECK MATE'
             #move = str(move) + '#'
-        elif self.board.in_check[color]:
+        elif self.board.in_check[opposite_color]:
             print '  Check'
             #move = str(move) + '+'
 
@@ -74,7 +75,7 @@ class Game(object):
         print Strategy(self.board).evaluation
         print
 
-        if self.board.check_mate[color]:
+        if self.board.check_mate[opposite_color]:
             self.endGame()
 
     def getMove(self, color):
