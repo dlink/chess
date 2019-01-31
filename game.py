@@ -123,7 +123,7 @@ class Game(object):
             best_move_score = None
 
             for j, new_position in enumerate(
-                    self.board.possibleMoves(piece, check_check=0)):
+                    self.board.possibleMoves(piece)):
                 # build hypothetical board
                 hboard = deepcopy(self.board)
                 hboard.name = 'hboard2'
