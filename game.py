@@ -35,6 +35,13 @@ class Game(object):
             board - board set up data, eq.: 'standard'
             game_history - a file containing game history to play on load
         '''
+        if white_player not in ('h', 'c'):
+            raise GameError("Invalid white_player: '%s'. "
+                            "Must be either 'h' or 'c'" % white_player)
+        if white_player not in ('h', 'c'):
+            raise GameError("Invalid white_player: '%s'. "
+                            "Must be either 'h' or 'c'" % black_player)
+        
         self.players = {'w': white_player,
                         'b': black_player}
         self.board = Board(display_type='standard',
