@@ -2,16 +2,21 @@
 
 '''Board Module
 
-   Control the state of the games board, legal moves, captures, checks and check mates
+   Control the state of the games board, legal moves, captures, checks and
+      check mates
    Uses Display module to display the board
-   Uses Notation module to understand chess standard notation (SAN). eq.: e4, Nc3, etc.
+   Uses Notation module to understand chess standard notation (SAN).
+      eq.: e4, Nc3, etc.
 
    Example:
 
    Create a chess board with standard piece setup, using a 'standard' display
+
       board = Board()
 
-   Create a chess board with a rooks and pieces setup, using a 'simple' display type
+   Create a chess board with a rooks and pieces setup, using a 'simple'
+      display type
+
       board = Board('rooks_and_kings', 'standard')
 
 '''
