@@ -130,15 +130,13 @@ class Game(object):
             best_move = None
             best_move_score = None
 
-            for j, new_position in enumerate(
-                    self.board.possibleMoves(piece)):
+            for j, new_position in enumerate(piece.possible_moves):
                 # build hypothetical board
                 hboard = deepcopy(self.board)
                 hboard.name = 'hboard2'
                 hpiece = hboard.getPieceAt(piece.position)
                 # make the move
-                hboard.movePiece(hpiece, new_position, check_legal=0,
-                                     check_check=0)
+                hboard.movePiece(hpiece, new_position, check_check=0)
                 ma, da, cca = Strategy(hboard).evaluation2()
                 score = ma + da + cca
                 # try looking one more turn
@@ -168,7 +166,7 @@ class Game(object):
                 best_piece_move = best_move
                 best_piece_move_score = best_move_score
         #orig_position = best_piece.position
-        an = self.board.movePiece(best_piece, best_piece_move, check_legal=0)
+        an = self.board.movePiece(best_piece, best_piece_move)
         return an, color
 
     def randomMove(self, color):
@@ -191,7 +189,7 @@ class Game(object):
             moveable_piece_found = 1
         dice = randint(0, len(possible_moves)-1)
         position = possible_moves[dice]
-        return self.board.movePiece(piece, position, check_legal=0)
+        return self.board.movePiece(piece, position)
 
     def pause(self):
         '''Pause game

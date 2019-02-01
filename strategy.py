@@ -38,8 +38,7 @@ class Strategy(object):
         white_development = 0
         white_center = 0
         for piece in self.board.getActivePieces('w'):
-            possibilities = self.board.possibleMoves(
-                piece, check_check=0, captureable_only=1)
+            possibilities = piece.possible_moves # TO DO: only check pawn capture moves
             
             # development
             if piece.char in ('R', 'N', 'B', 'Q'):
@@ -53,8 +52,8 @@ class Strategy(object):
         black_development = 0
         black_center = 0
         for piece in self.board.getActivePieces('b'):
-            possibilities = self.board.possibleMoves(
-                piece, check_check=0, captureable_only=1)
+            possibilities = piece.possible_moves # TO DO: only check pawn capture moves
+
             # development
             if piece.char in ('R', 'N', 'B', 'Q'):
                 black_development  += len(possibilities)

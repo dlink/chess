@@ -87,6 +87,7 @@ class Board(object):
         self.rook_moved = {'w': {'a': 0, 'h': 0},
                            'b': {'a': 0, 'h': 0}}
         self.setup()
+        self.updatePossibleMoves()
         self.display = Display(self)
         self.display.type = display_type
         self.notation = Notation(self)
@@ -116,7 +117,7 @@ class Board(object):
 
             self.placePiece(piece, position)
             self.pieces.append(piece)
-
+            
     def loadHistory(self, history):
         game_file = 'data/%s.game' % history
         history = open(game_file, 'r').read()
@@ -192,15 +193,15 @@ class Board(object):
         piece, position = self.notation.getPieceAndDest(an, color)
         return self.movePiece(piece, position)
 
-    def movePiece(self, piece, position, check_legal=1, check_check=1):
+    def movePiece(self, piece, position, check_check=1):
         '''Given a piece object, and a position in standard notation
            Perform the move.
 
-           Confirm move is valid - if check_legal=1
            Perform captures if applicable
            Promote pawns
-           checks for checks and check mates -- if check_chec
+           checks for checks and check mates -- if check_check
            Sets pieces position attr to the new position
+           Recalculate piece.possible_moves
 
            Returns move as a string in standard notation
         '''
@@ -214,10 +215,9 @@ class Board(object):
         # init in_check
         self.in_check[piece.opposite_color] = 0
 
-        if check_legal:
-            if position not in self.possibleMoves(piece):
-                raise BoardError('B2: Invalid Move: %s can not move to %s' %
-                                 (piece, position))
+        if position not in piece.possible_moves:
+            raise BoardError('B2: Invalid Move: %s can not move to %s' %
+                             (piece, position))
 
         # check for disambuguity
         disambiguous = ''
@@ -226,7 +226,7 @@ class Board(object):
         ambiguous_rows = []
         for p in self.getActivePieces(piece.color):
             if p != piece and p.char == piece.char:
-                if position in self.possibleMoves(p, check_check=0):
+                if position in p.possible_moves:
                     if self.name == 'board':
                         ambiguous_pieces.append(p)
                         ambiguous_files.append(p.position[0])
@@ -303,13 +303,12 @@ class Board(object):
         # does this put opponent in check?
         if check_check:
             opponent_king = self.getPiece('K', piece.opposite_color)
-            if opponent_king.position in self.possibleMoves(piece):
+            if opponent_king.position in piece.possible_moves:
 
                 # is this check mate?
                 has_escape = 0
                 for op_piece in self.getActivePieces(piece.opposite_color):
-                    op_possibilities = self.possibleMoves(op_piece)
-                    if op_possibilities:
+                    if op_piece.possible_moves:
                         has_escape = 1
                         break
                 if has_escape:
@@ -318,7 +317,8 @@ class Board(object):
                 else:
                     self.check_mate[piece.opposite_color] = 1
                     check_mate = 1
-
+                    
+        self.updatePossibleMoves()
         move = self.notation.getNotation(orig_position, piece, disambiguous,
                                          capture, castled, check, check_mate)
 
@@ -331,20 +331,23 @@ class Board(object):
 
         return move
 
-    def possibleMoves(self, piece, check_check=1, captureable_only=0):
+    def updatePossibleMoves(self):
+        for color in ('w', 'b'):
+            for p in self.getActivePieces(color):
+                p.possible_moves = self.possibleMoves(p, check_check=0)
+
+    def possibleMoves(self, piece, check_check=1):
         '''Given a piece on the board
            Return a list of possible legal positions it can move to
                   as a str in standard notation. ie: 'e4'
            check_check - check if move puts you in check (TO DO rework)
-           captureable_only - only returns capture movements for pawns
         '''
         possibilities = []
         for move_op in piece.move_ops:
             positions = self._getMoveDestinations(piece, move_op)
             positions = self._validateNotInCheck(piece, positions, check_check)
             possibilities.extend(positions)
-        if self.name == 'board':
-            print self.name, piece, possibilities
+        #print self.name, 'possibleMoves():', piece, possibilities
         return possibilities
 
     def _validateNotInCheck(self, piece, positions, check_check):
@@ -370,13 +373,12 @@ class Board(object):
             hboard = deepcopy(self)
             hboard.name = 'hboard'
             hpiece = hboard.getPieceAt(piece.position)
-            hboard.movePiece(hpiece, position, check_legal=0, check_check=0)
+            hboard.movePiece(hpiece, position, check_check=0)
             # check opponent's possible moves
             in_check = 0
             king = hboard.getPiece('K', hpiece.color)
             for p in hboard.getActivePieces(hpiece.opposite_color):
-                hpossibilities = hboard.possibleMoves(p, check_check=0)
-                if king.position in hpossibilities:
+                if king.position in p.possible_moves:
                     in_check = 1
                     break
             if in_check:
@@ -386,7 +388,7 @@ class Board(object):
             positions2.append(position)
         return positions
 
-    def _getMoveDestinations(self, piece, move_op, captureable_only=0):
+    def _getMoveDestinations(self, piece, move_op):
         '''Given: A piece on the board, and a move_op instruction
                      eq.: 'b*' - back any number of squares
                      See Piece Objects for how move_ops are defined.
@@ -404,10 +406,6 @@ class Board(object):
         vector = 1 if piece.color == 'w' else -1
         dists = range(1, 8) if dist == '*' else range(1, int(dist)+1)
         for d in dists:
-
-            # only pawn capture moves?
-            if captureable_only and piece.char == 'P' and direction == 'f':
-                continue
 
             vdist = vector * d
             # orthonal move_op
@@ -456,9 +454,7 @@ class Board(object):
                     break
                 x2 = x - 3; y2 = y
             elif direction == 'z':
-                print self.name, 'check okay'
                 if not self._okayToCastle(piece, direction):
-                    print self.name, 'not okay'
                     break
                 x2 = x + 2; y2 = y
 

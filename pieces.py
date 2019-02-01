@@ -42,6 +42,7 @@ class Piece(object):
         self.color = color
         self.postion = None
         self.moved = False
+        self.possibleMoves = None
 
     def __repr__(self):
         return '%s:%s%s' %(self.color, self.char, self.position)

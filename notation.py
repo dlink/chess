@@ -154,7 +154,7 @@ class Notation(object):
             pos_pieces = []
             for piece in self.board.getActivePieces(color):
                 if piece.char == piece_char:
-                    for pp in self.board.possibleMoves(piece, check_check=0):
+                    for pp in piece.possible_moves:
                         if pp == position:
                             pos_pieces.append(piece)
                             break
