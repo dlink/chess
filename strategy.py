@@ -78,23 +78,6 @@ class Strategy(object):
 
         return wd, bd, wc, bc
             
-    def centerControl(self):
-        
-        white = 0
-        for piece in self.board.getActivePieces('w'):
-            white += len(self.board.possibleMoves(piece, check_check=0))
-        black = 0
-        for piece in self.board.getActivePieces('b'):
-            if piece.char in ('R', 'N', 'B', 'Q'):
-                black += len(self.board.possibleMoves(piece, check_check=0))
-        print 'white-black:', white, black
-        diff = white - black
-        if diff > 0:
-            return diff, 0
-        return 0, -diff
-    
-            
-            
 if __name__ == '__main__':
     from board import Board
     s = Strategy(Board())
