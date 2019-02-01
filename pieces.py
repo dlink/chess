@@ -41,6 +41,7 @@ class Piece(object):
             raise PiecesError('Unrecognized color: %s' % color)
         self.color = color
         self.postion = None
+        self.moved = False
 
     def __repr__(self):
         return '%s:%s%s' %(self.color, self.char, self.position)

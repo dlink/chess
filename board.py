@@ -64,7 +64,7 @@ class Board(object):
            Initializes board attributes
            Calls setup() which, create the pieces and add them to the board
 
-           setup_data:  a filename which maps to data/<filename>.board 
+           setup_data:  a filename which maps to data/<filename>.board
                         which uses color and standard notation to denote
                         which pieces go where.
                         eq.: w:a2 places a white Pawn on a2
@@ -100,14 +100,14 @@ class Board(object):
 
     def setup(self):
         '''Set up the pieces on the board based self.setup_data'''
-        
+
         # read setup data
         for row in open(self.setup_data).readlines():
             # ignore comments, skip blank lines
             row = re.sub('#.*', '', row).strip()
             if not row:
                 continue
-            
+
             # eq.: w:Ke1
             color, piece_position = row.split(':')
             char = piece_position[0]
@@ -116,7 +116,7 @@ class Board(object):
 
             self.placePiece(piece, position)
             self.pieces.append(piece)
-            
+
     def loadHistory(self, history):
         game_file = 'data/%s.game' % history
         history = open(game_file, 'r').read()
@@ -130,7 +130,7 @@ class Board(object):
             color = ['w', 'b'][i%3-1]
             self.move(an, color)
         print
-        
+
     def display_history(self):
         '''Return a string of all moves made so far in standard notation'''
 
@@ -191,7 +191,7 @@ class Board(object):
         '''
         piece, position = self.notation.getPieceAndDest(an, color)
         return self.movePiece(piece, position)
-        
+
     def movePiece(self, piece, position, check_legal=1, check_check=1):
         '''Given a piece object, and a position in standard notation
            Perform the move.
@@ -238,7 +238,7 @@ class Board(object):
                 disambiguous = piece.position[1]
             else:
                 disambiguous = piece.position
-            
+
         # remove piece from the board
         x,y = position2xy(piece.position)
         self.matrix[y][x] = None
@@ -250,7 +250,7 @@ class Board(object):
             opponent_piece.position = 'x'
             self.captured.append(opponent_piece)
             capture = 1
-        
+
         # promote pawns: d8Q, e8xQ
         if piece.char == 'P':
             if (piece.color == 'w' and position[1] == '8') or \
@@ -261,14 +261,19 @@ class Board(object):
 
         # place piece
         piece.position = position
+        piece.moved = True
         self.matrix[y][x] = piece
 
         # king move?
         if piece.char == 'K':
             # mark king moved
             self.king_moved[piece.color] = 1
-            
+
             # castling? move rook, too
+            # TO DO: saying g1 is not sufficient to assume castling
+            #        king could have g1 as a possible move, but not a castel
+            #        Error happens when king moves to f1, then tries to castle.
+            #        system translates that to a simple move to g1
             f = 1 if piece.color == 'w' else 8
             if orig_position == 'e%s' % f:
                 rpos1, rpos2 = None, None
@@ -299,7 +304,7 @@ class Board(object):
         if check_check:
             opponent_king = self.getPiece('K', piece.opposite_color)
             if opponent_king.position in self.possibleMoves(piece):
-                
+
                 # is this check mate?
                 has_escape = 0
                 for op_piece in self.getActivePieces(piece.opposite_color):
@@ -316,72 +321,82 @@ class Board(object):
 
         move = self.notation.getNotation(orig_position, piece, disambiguous,
                                          capture, castled, check, check_mate)
-        
+
         # record history
         if piece.color == 'w':
             self.history.append([move,''])
         else:
             self.history[-1][1] = move
         self.last_move_position = piece.position
-        
+
         return move
 
     def possibleMoves(self, piece, check_check=1, captureable_only=0):
         '''Given a piece on the board
-           Return a list of possible positions it can move to in 
-                  standard notation
-           Set check_check=0 when nec. to avoid infinate recursion
+           Return a list of possible legal positions it can move to
+                  as a str in standard notation. ie: 'e4'
+           check_check - check if move puts you in check (TO DO rework)
+           captureable_only - only returns capture movements for pawns
         '''
-        # TO DO: Why do we need captureable_only flag?
-        
-        if not piece:
-            return []
-
         possibilities = []
         for move_op in piece.move_ops:
-            new_positions = self.getMoveDestination(piece, move_op)
-
-            # skip check check
-            if not check_check:
-                possibilities.extend(new_positions)
-                continue
-
-            # check check - Invalid move, due to a check? (Uses recursion)
-            for new_position in new_positions:
-
-                # build hypothetical board and make move on it.
-                hboard = deepcopy(self)
-                hboard.name = 'hboard'
-                hpiece = hboard.getPieceAt(piece.position)
-                hboard.movePiece(hpiece, new_position, check_legal=0,
-                                     check_check=0)
-                # check opponent's possible moves 
-                in_check = 0
-                king = hboard.getPiece('K', hpiece.color)
-                for p in hboard.getActivePieces(hpiece.opposite_color):
-                    hpossibilities = hboard.possibleMoves(
-                        p, check_check=0)
-                    if king.position in hpossibilities:
-                        in_check = 1
-                        break
-                del hboard
-                
-                # in check?
-                if not in_check:
-                    possibilities.append(new_position)
-        
+            positions = self._getMoveDestinations(piece, move_op)
+            positions = self._validateNotInCheck(piece, positions, check_check)
+            possibilities.extend(positions)
+        if self.name == 'board':
+            print self.name, piece, possibilities
         return possibilities
 
-    def getMoveDestination(self, piece, move_op, captureable_only=0):
-        '''Given a piece on the board, and a move_op instruction
-           Return  a list of destinatins it can move to based on
-             how the piece moves - regardless of what's legal on 
-             the current board.
-           See Piece Objects for how move_ops are defined.
+    def _validateNotInCheck(self, piece, positions, check_check):
+        # check check - Invalid move, due to a check? (Uses recursion)
+
+        # TO DO: Rework to not require (A) cloning board, and
+        #     (B) calling possibleMoves() recursively
+        #     this will also eliminate the need for check_check flag
+        # New Logic:
+        #     Work backwards from king out
+        #     for each active opponent piece type
+        #     ie. does the opponent have rooks?
+        #        if so search from the king out orthagonally, etc.
+        # TO DO: check if king moves thru check while castling
+
+        if not check_check:
+            return positions
+
+        positions2 = []
+        for position in positions:
+
+            # build hypothetical board and make move on it.
+            hboard = deepcopy(self)
+            hboard.name = 'hboard'
+            hpiece = hboard.getPieceAt(piece.position)
+            hboard.movePiece(hpiece, position, check_legal=0, check_check=0)
+            # check opponent's possible moves
+            in_check = 0
+            king = hboard.getPiece('K', hpiece.color)
+            for p in hboard.getActivePieces(hpiece.opposite_color):
+                hpossibilities = hboard.possibleMoves(p, check_check=0)
+                if king.position in hpossibilities:
+                    in_check = 1
+                    break
+            if in_check:
+                break
+
+            del hboard
+            positions2.append(position)
+        return positions
+
+    def _getMoveDestinations(self, piece, move_op, captureable_only=0):
+        '''Given: A piece on the board, and a move_op instruction
+                     eq.: 'b*' - back any number of squares
+                     See Piece Objects for how move_ops are defined.
+
+           Return: A list of squares it can move to
+                     regardless of check
+                     for castling only return kings new position
         '''
         x,y = position2xy(piece.position)
         direction, dist = move_op
-
         x2 = x
         y2 = y
 
@@ -390,10 +405,10 @@ class Board(object):
         dists = range(1, 8) if dist == '*' else range(1, int(dist)+1)
         for d in dists:
 
-            if captureable_only:
-                if piece.char == 'P' and direction == 'f':
-                    continue
-   
+            # only pawn capture moves?
+            if captureable_only and piece.char == 'P' and direction == 'f':
+                continue
+
             vdist = vector * d
             # orthonal move_op
             if direction == 'f':
@@ -435,72 +450,82 @@ class Board(object):
             elif direction == 'q':
                 x2 = x - vdist*2; y2 = y - vdist
 
-            # king castle
-            elif direction == 'y': # queen side
-                x2 = x - 3; y2 = y 
-            elif direction == 'z': # king side
-                x2 = x + 2; y2 = y 
+            # castling
+            elif direction == 'y':
+                if not self._okayToCastle(piece, direction):
+                    break
+                x2 = x - 3; y2 = y
+            elif direction == 'z':
+                print self.name, 'check okay'
+                if not self._okayToCastle(piece, direction):
+                    print self.name, 'not okay'
+                    break
+                x2 = x + 2; y2 = y
+
             else:
-                raise BoardError('B1: Unknown movment direction: %s' %
+                raise BoardError('B1: Unknown movement direction: %s' %
                                  direction)
 
-            # off the board:
+            # off the board?:
             if y2 not in range(0, 8) or x2 not in range(0, 8):
                 break
 
             new_position = xy2position(x2, y2)
 
-            # occupied squre?
+            # occupied square?
             piece2 = self.getPieceAt(new_position)
-
-            # handle pawn capture
-            if piece.char == 'P':
-                if direction == 'f':
-                    if piece2:
-                        break
-                else:
-                    # diagonal move_op
-                    if not piece2 or piece2.color == piece.color:
-                        break
-                    
-            # handle castling
-            elif piece.char == 'K' and direction in ('y', 'z'):
-                # TO DO: see if castle moves thru any checks
-                if self.king_moved[piece.color]:
+            if piece2:
+                if piece2.color == piece.color:
                     break
-                row = 1 if piece.color == 'w' else 8
-                if direction == 'y':
-                    rook_file = 'a'
-                    intervening_files = 'bcd'
-                else:
-                    rook_file = 'h'
-                    intervening_files = 'fg'
-                if self.rook_moved[piece.color][rook_file]:
+                if piece.char == 'P' and direction == 'f':
                     break
-                king = self.getPieceAt('e%s' % row)
-                rook = self.getPieceAt('%s%s' % (rook_file, row))
-                if not king or not rook: # could happen on non standard boards
-                    break
-                there_are_intervening = 0
-                for file_ in intervening_files:
-                    if self.getPieceAt('%s%s' % (file_, row)):
-                        there_are_intervening = 1
-                        break
-                if there_are_intervening:
-                    break
-
-            # pieces other than pawns
             else:
-                if piece2:
-                    if piece2.color != piece.color:
-                        # can capture opponents piece
-                        # TO DO: I think this is addding new_position twice
-                        new_positions.append(new_position)
+                if piece.char == 'P' and direction in ('d', 'e'):
                     break
-            
+
             new_positions.append(new_position)
 
         return new_positions
+
+    def _okayToCastle(self, piece, direction):
+        # is piece a King?
+        if piece.char != 'K':
+            raise BoardError('Bn: Invalid move_op "%s" for "%s"' %
+                             direction, piece)
+
+        # are we in check?
+        if self.in_check[piece.color]:
+            return False
+
+        # is king at its starting postion and has it moved?
+        file_ = 1 if piece.color == 'w' else 8
+        if piece.position != 'e%s' % file_ or piece.moved:
+            return False
+
+        # queen side
+        if direction == 'y':
+            # are interveneing squares free
+            if self.getPieceAt('b%s' % file_) or \
+               self.getPieceAt('c%s' % file_) or \
+               self.getPieceAt('d%s' % file_):
+                return False
+            # is rook there and has it moved?
+            rook = self.getPieceAt('a%s'% file_)
+            if not rook or rook.moved:
+                return False
+
+        # king side
+        else:
+            # are interveneing squares free
+            if self.getPieceAt('f%s' % file_) or \
+               self.getPieceAt('g%s' % file_):
+                return False
+            # is rook there and has it moved?
+            rook = self.getPieceAt('h%s'% file_)
+            if not rook or rook.moved:
+                return False
+
+        return True
 
 if __name__ == '__main__':
     board = Board()
