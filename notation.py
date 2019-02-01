@@ -148,6 +148,9 @@ class Notation(object):
             if piece_char not in Pieces.piece_chars:
                 raise NotationError('N3: Invalid notation: Unrecognized '
                                     'piece char: %s' % orig_an)
+            
+            # TO DO: this checks to see if move is allowable
+            #   this logic is already handled in Board.move()
             pos_pieces = []
             for piece in self.board.getActivePieces(color):
                 if piece.char == piece_char:
