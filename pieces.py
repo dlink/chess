@@ -60,12 +60,6 @@ class Piece(object):
         else:
             return self.glyphs[1]
 
-    def possibleMoves(self):
-        'test case: move forward one'
-        c = self.position.move(self.color, 'f1')
-
-        return c
-
 class Pawn(Piece):
     #  d f e
     #    .
