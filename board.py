@@ -334,38 +334,29 @@ class Board(object):
     def updatePossibleMoves(self):
         for color in ('w', 'b'):
             for p in self.getActivePieces(color):
-                p.possible_moves = self.possibleMoves(p, check_check=0)
+                p.possible_moves = self.possibleMoves(p)
 
     def possibleMoves(self, piece, check_check=1):
         '''Given a piece on the board
            Return a list of possible legal positions it can move to
                   as a str in standard notation. ie: 'e4'
-           check_check - check if move puts you in check (TO DO rework)
+           check_check - check if move puts you in check (0 to avoid recursion)
         '''
         possibilities = []
         for move_op in piece.move_ops:
             positions = self._getMoveDestinations(piece, move_op)
-            positions = self._validateNotInCheck(piece, positions, check_check)
+            if not check_check:
+                positions = self._validateNotInCheck(piece, positions)
             possibilities.extend(positions)
-        #print self.name, 'possibleMoves():', piece, possibilities
+        print self.name, 'possibleMoves():', piece, possibilities
         return possibilities
 
-    def _validateNotInCheck(self, piece, positions, check_check):
-        # check check - Invalid move, due to a check? (Uses recursion)
-
-        # TO DO: Rework to not require (A) cloning board, and
-        #     (B) calling possibleMoves() recursively
-        #     this will also eliminate the need for check_check flag
-        # New Logic:
-        #     Work backwards from king out
-        #     for each active opponent piece type
-        #     ie. does the opponent have rooks?
-        #        if so search from the king out orthagonally, etc.
-        # TO DO: check if king moves thru check while castling
-
-        if not check_check:
-            return positions
-
+    def _validateNotInCheck(self, piece, positions):
+        '''Given a piece on the board, and a list of positions it can move to
+           Return: True if move is legal - that it does not put this piece's
+                     the player in check
+           Otherwise Return: False
+        '''
         positions2 = []
         for position in positions:
 
@@ -471,15 +462,19 @@ class Board(object):
             # occupied square?
             piece2 = self.getPieceAt(new_position)
             if piece2:
-                if piece2.color == piece.color:
-                    break
                 if piece.char == 'P' and direction == 'f':
+                    break
+                if piece2.color == piece.color:
                     break
             else:
                 if piece.char == 'P' and direction in ('d', 'e'):
                     break
 
             new_positions.append(new_position)
+
+            # you can capture piece, but go not further
+            if piece2 and piece2.color != piece.color:
+                break
 
         return new_positions
 
