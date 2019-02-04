@@ -100,6 +100,10 @@ class Game(object):
              for check
            Raises NotationError and BoardError
            Returns move as string in standard notation, and color
+
+           Can also ask for a pieces possible moves with
+              show [P,N,B,...], or
+              show [b:P,b:N,b:B,...]
         '''
         input_okay = 0
         while not input_okay:
@@ -108,6 +112,17 @@ class Game(object):
                 continue
             if an.lower() == 'x':
                 self.endGame()
+                
+            # show piece possible moves
+            if an[0:5] == 'show ':
+                piece_char = an[5:]
+                if ':' in piece_char:
+                    color, piece_char = piece_char.split(':')
+                for piece in self.board.getActivePieces(color):
+                    if piece.char == piece_char:
+                        print piece, 'possible moves:', piece.possible_moves
+                continue
+            
             try:
                 an = self.board.move(an, color)
             except (NotationError, BoardError), e:
