@@ -117,7 +117,7 @@ class Board(object):
 
             self.placePiece(piece, position)
             self.pieces.append(piece)
-            
+
     def loadHistory(self, history):
         game_file = 'data/%s.game' % history
         history = open(game_file, 'r').read()
@@ -317,7 +317,7 @@ class Board(object):
                 else:
                     self.check_mate[piece.opposite_color] = 1
                     check_mate = 1
-                    
+
         self.updatePossibleMoves()
         move = self.notation.getNotation(orig_position, piece, disambiguous,
                                          capture, castled, check, check_mate)
@@ -335,6 +335,12 @@ class Board(object):
         for color in ('w', 'b'):
             for p in self.getActivePieces(color):
                 p.possible_moves = self.possibleMoves(p)
+                # store moves prior to purgeCheckMoves
+                p.possible_precheck_moves = p.possible_moves
+        for color in ('w', 'b'):
+            for p in self.getActivePieces(color):
+                p.possible_moves = self.purgeCheckMoves(p)
+                #print self.name, 'possible moves:', p, p.possible_moves
 
     def possibleMoves(self, piece, check_check=1):
         '''Given a piece on the board
@@ -345,18 +351,218 @@ class Board(object):
         possibilities = []
         for move_op in piece.move_ops:
             positions = self._getMoveDestinations(piece, move_op)
-            if not check_check:
-                positions = self._validateNotInCheck(piece, positions)
             possibilities.extend(positions)
-        print self.name, 'possibleMoves():', piece, possibilities
-        return possibilities
+        return sorted(possibilities)
 
-    def _validateNotInCheck(self, piece, positions):
-        '''Given a piece on the board, and a list of positions it can move to
+    def purgeCheckMoves(self, piece):
+        '''Given a piece on the board, whose possible_moves has already
+              been calculated
+           Purge from them those moves that are illegal - that would put
+              this piece's player in check
+        '''
+
+        # Two case of putting yourself in check
+        # Case 1: Move the king into check
+        # Case 2: Reveal check by moving a piece away from protecting the king
+        #         This case only applies to attacks from B, R, Q
+
+        # Case 1
+        if piece.char == 'K':
+            return self.purgeCheckMovesKing(piece)
+
+        # Case 2
+        king = self.getPiece('K', piece.color)
+        kx, ky = position2xy(king.position)
+        px, py = position2xy(piece.position)
+        #print self.name, 'purgecheck king:', king, kx, ky
+        #print self.name, 'purgecheck piece:', piece, px, py
+        positions2 = []
+
+        for position in piece.possible_moves:
+            npx, npy = position2xy(position)
+            #print self.name, piece, 'position:', position, npx, npy
+
+            # aligned vertically ?
+            if kx == px: # and not protected_vertical:
+                protected_vertical = 0
+                vector, max_board = (1, 8) if py > ky else (-1, -1)
+                # check squares between king and pieces orig position
+                # for a piece
+                for y in range(ky + vector, py, vector):
+                    #print self.name, 'v between:', piece, 'y:', y
+                    if self.matrix[y][kx] or (y == npy and kx == npx):
+                        # piece obstructing possible check in this dir.
+                        #print 'protected_vertical'
+                        protected_vertical = 1
+                        break # for y
+
+                # check squares beyond piece's orig position in a direct
+                # line away from the king, for an opponent R or Q
+                in_check = 0
+                if not protected_vertical:
+                    for y in range(py + vector, max_board, vector):
+                        #print self.name, 'v beyond', piece, 'y:', y
+                        piece2 = self.matrix[y][kx]
+                        if y == npy and kx == npx:
+                            #print 'protected vertical'
+                            protected_vertical = 1
+                            break # for y
+                        if piece2:
+                            if piece2.color == piece.opposite_color and \
+                               piece2.char in ('R', 'Q'):
+                                # in check
+                                #print 'v in_check'
+                                in_check = 1
+                            else:
+                                #print 'protected vertical'
+                                protected_vertical = 1
+                            break # for y
+
+                if in_check:
+                    continue # for position
+
+            # aligned horizontally ?
+            elif ky == py:
+                producted_horizontal = 0
+                vector, max_board = (1, 8) if px > kx else (-1, -1)
+                # check squares between king and pieces orig position
+                # for a piece
+                for x in range(kx + vector, px, vector):
+                    #print self.name, 'h between:', piece, 'x:', x
+                    if self.matrix[ky][x] or (ky == npy and x == npx):
+                        # piece obstructing possible check in this dir.
+                        #print 'producted_horizontal'
+                        producted_horizontal = 1
+                        break # for x
+
+                # check squares beyond piece's orig position in a direct
+                # line away from the king, for an opponent R or Q
+                in_check = 0
+                if not producted_horizontal:
+                    for x in range(px + vector, max_board, vector):
+                        #print self.name, 'h beyond', piece, 'x:', x
+                        piece2 = self.matrix[ky][x]
+                        if ky == npy and x == npx:
+                            #print 'protected horizontal'
+                            producted_horizontal = 1
+                            break # for x
+                        if piece2:
+                            if piece2.color == piece.opposite_color and \
+                               piece2.char in ('R', 'Q'):
+                                # in check
+                                #print 'h in_check'
+                                in_check = 1
+                            else:
+                                #print 'protected horizontal'
+                                producted_horizontal = 1
+                            break # for y
+
+                if in_check:
+                    continue # for position
+
+            # aligned diagonally
+            elif abs(ky-py) == abs(kx-px):
+                producted_diagonal = 0
+                xvector, xmax_board = (1, 8) if px > kx else (-1, -1)
+                yvector, ymax_board = (1, 8) if py > ky else (-1, -1)
+                # check squares between king and pieces orig position
+                # for a piece
+                y = ky # + yvector
+                for x in range(kx + xvector, px, xvector):
+                    y += yvector
+                    print self.name, 'd between:', piece, 'x:', x, 'y:', y
+                    if self.matrix[y][x] or (y == npy and x == npx):
+                        # piece obstructing possible check in this dir.
+                        print 'producted_diagonal'
+                        producted_diagonal = 1
+                        break # for x
+
+                # check squares beyond piece's orig position in a direct
+                # line away from the king, for an opponent R or Q
+                in_check = 0
+                if not producted_diagonal:
+                    y = py
+                    for x in range(px + xvector, xmax_board, xvector):
+                        y += yvector
+                        if y >= ymax_board:
+                            break # for x
+                        print self.name, 'd beyond', piece, 'x:', x, 'y:', y
+                        if y == npy and x == npx:
+                            print 'protected diagonal'
+                            producted_diagonal = 1
+                            break # for x
+                        piece2 = self.matrix[y][x]
+                        if piece2:
+                            if piece2.color == piece.opposite_color and \
+                               piece2.char in ('R', 'Q'):
+                                # in check
+                                print 'd in_check'
+                                in_check = 1
+                            else:
+                                print 'protected diagonal'
+                                producted_diagonal = 1
+                            break # for y
+
+                if in_check:
+                    continue # for position
+
+            positions2.append(position)
+        #print 'return positions2:', piece, positions2
+        return positions2
+
+    def purgeCheckMovesKing(self, king):
+        '''Given a king on the board, whose possible_moves has already
+              been calculated
+           Purge from them those moves that are illegal - that would put
+              this king's player in check
+        '''
+        # TO DO: fails for pawns as pawns's possible_moves do not consider
+        #    capture moves until king is in harms way.
+        #    ie:
+        #w:Kh1
+        #b:Pf2
+        #b:Kh8
+        #b:Bd4
+
+        positions2 = []
+        for position in king.possible_moves:
+            in_check = 0
+            for op_piece in self.getActivePieces(king.opposite_color):
+                print 'op_piece:', op_piece, op_piece.possible_moves
+                if position in op_piece.possible_precheck_moves:
+                    in_check = 1
+                    break
+            if in_check:
+                continue
+            positions2.append(position)
+        return positions2
+
+    def _validateNotInCheck0(self, piece):
+        '''Old way of doing it.
+
+           We may need to refactor to combine some of the new and some of the old way
+           ie.: check the king separately, then only check B, R, and Q for possibly
+           being in check
+
+           And we may have to re-introduce the check_check=0 flag to avoid
+           checking for check, while checking for check
+
+
+           Given a piece on the board, and a list of positions it can move to
            Return: True if move is legal - that it does not put this piece's
                      the player in check
            Otherwise Return: False
         '''
+
+        # Two case of putting yourself in check
+        # Case 1: Move the king into check
+        # Case 2: Reveal check by moving a piece away from protecting the king
+        #         This case only applies to attacks from B, R, Q
+
+        # Case 1
+        if piece.char == 'K':
+            return self.purgeCheckMovesKing(piece)
+
         positions2 = []
         for position in positions:
 
