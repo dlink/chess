@@ -1,44 +1,57 @@
+TO DO:
+
+10. move issue tracking into github
+
 9. purgeCheckMoves needs work.  Refactor to use hypo-board again
 
 8. disambiguity does not work with 'x' for capture.
+ 
+       a   b   c   d   e   f   g   h
+     ╔═══╤═══╤═══╤═══╤═══╤═══╤═══╤═══╗
+   8 ║   |   |   |   | ♚ | ♝ |   | ♕ ║ 8
+     ╟───┼───┼───┼───┼───┼───┼───┼───╢
+   7 ║ ♟ |   | ♟ | ♟ |   |   |   | ♟ ║ 7   ♗ ♘
+     ╟───┼───┼───┼───┼───┼───┼───┼───╢
+   6 ║ ♗ |   | ♞ |   | ♟ |*♟*|   |   ║ 6
+     ╟───┼───┼───┼───┼───┼───┼───┼───╢
+   5 ║   | ♜ |   |   |   |   |   |   ║ 5
+     ╟───┼───┼───┼───┼───┼───┼───┼───╢
+   4 ║   |   |   | ♙ |   |   |   |   ║ 4
+     ╟───┼───┼───┼───┼───┼───┼───┼───╢
+   3 ║   |   | ♘ |   |   | ♕ |   |   ║ 3
+     ╟───┼───┼───┼───┼───┼───┼───┼───╢
+   2 ║ ♙ | ♙ | ♙ |   |   | ♙ | ♙ | ♙ ║ 2
+     ╟───┼───┼───┼───┼───┼───┼───┼───╢
+   1 ║ ♖ |   |   |   | ♔ |   |   | ♖ ║ 1   ♛ ♟ ♝ ♞ ♟ ♜
+     ╚═══╧═══╧═══╧═══╧═══╧═══╧═══╧═══╝ 
+       a   b   c   d   e   f   g   h
+    
+   1. d4 Nc6 2. Nf3 e6 3. Bg5 Qxg5 4. Nxg5 Nf6 5. Nc3 Bd6 6. e4 b5
+   7. Bxb5 Ba6 8. Bxa6 Rb8 9. e5 Rb5 10. exf6 Rxg5 11. fxg7 Rb5
+   12. Qxh8+ Bf8 13. Qf3 f6 Material Advantage: 24:0 Development
+   Advantage: 0:12 Center Control Advantage: 0:1
 
-a   b   c   d   e   f   g   h
-  ╔═══╤═══╤═══╤═══╤═══╤═══╤═══╤═══╗
-8 ║   |   |   |   | ♚ | ♝ |   | ♕ ║ 8
-  ╟───┼───┼───┼───┼───┼───┼───┼───╢
-7 ║ ♟ |   | ♟ | ♟ |   |   |   | ♟ ║ 7   ♗ ♘
-  ╟───┼───┼───┼───┼───┼───┼───┼───╢
-6 ║ ♗ |   | ♞ |   | ♟ |*♟*|   |   ║ 6
-  ╟───┼───┼───┼───┼───┼───┼───┼───╢
-5 ║   | ♜ |   |   |   |   |   |   ║ 5
-  ╟───┼───┼───┼───┼───┼───┼───┼───╢
-4 ║   |   |   | ♙ |   |   |   |   ║ 4
-  ╟───┼───┼───┼───┼───┼───┼───┼───╢
-3 ║   |   | ♘ |   |   | ♕ |   |   ║ 3
-  ╟───┼───┼───┼───┼───┼───┼───┼───╢
-2 ║ ♙ | ♙ | ♙ |   |   | ♙ | ♙ | ♙ ║ 2
-  ╟───┼───┼───┼───┼───┼───┼───┼───╢
-1 ║ ♖ |   |   |   | ♔ |   |   | ♖ ║ 1   ♛ ♟ ♝ ♞ ♟ ♜
-  ╚═══╧═══╧═══╧═══╧═══╧═══╧═══╧═══╝ 
-    a   b   c   d   e   f   g   h
-1. d4 Nc6 2. Nf3 e6 3. Bg5 Qxg5 4. Nxg5 Nf6 5. Nc3 Bd6 6. e4 b5 7. Bxb5 Ba6 8. Bxa6 Rb8 9. e5 Rb5 10. exf6 Rxg5 11. fxg7 Rb5 12. Qxh8+ Bf8 13. Qf3 f6
-Material Advantage: 24:0
-Development Advantage: 0:12
-Center Control Advantage: 0:1
+   Enter move, x to exit: Qxf6
+   N5: Ambiguous move: Qf6: (w:Qf3, w:Qh8)
+   Enter move, x to exit: Qhxf6
+   N5: Ambiguous move: Qf6: (w:Qf3, w:Qh8)
+   Enter move, x to exit: Qhf6
 
-Enter move, x to exit: Qxf6
-N5: Ambiguous move: Qf6: (w:Qf3, w:Qh8)
-Enter move, x to exit: Qhxf6
-N5: Ambiguous move: Qf6: (w:Qf3, w:Qh8)
-Enter move, x to exit: Qhf6
-
-
-7. Development. prioritize lessor value pieces.  Rigel always pulls out the Queen
+7. Development. prioritize lessor value pieces.  Rigel always pulls
+   out the Queen
 
 -- Done --
+
 4. Remove dependency on vlib
+
 3. Board. Last move indicator.
+
 1. Notation: need to recognize castling.  reports Kg1.  should report 0-0
+
 2. Notation: disambuity: Does not recognize Rad1, as appos. to Rfd1
-5. Fix ilegal moves - below - King take Queen and moves into check.  1. e4 e6 2. d4 Qg5 3. Bxg5 Nc6 4. Qf3 Nf6 5. Bxf6 gxf6 6. Qxf6 Rg8 7. Nf3 Rg5 8. Nxg5 b5 9. Qxf7+ Kxf7
+
+5. Fix ilegal moves - below - King take Queen and moves into check.
+   1. e4 e6 2. d4 Qg5 3. Bxg5 Nc6 4. Qf3 Nf6 5. Bxf6 gxf6 6. Qxf6 Rg8
+   7. Nf3 Rg5 8. Nxg5 b5 9. Qxf7+ Kxf7
+
 6. Implement replay history
