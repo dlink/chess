@@ -1,5 +1,7 @@
 TO DO:
 
+11. New purgeCheckMoves: test all diaganal moves.
+
 10. move issue tracking into github
 
 9. purgeCheckMoves needs work.  Refactor to use hypo-board again

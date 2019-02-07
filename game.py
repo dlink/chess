@@ -12,11 +12,14 @@
 import sys
 from copy import deepcopy
 from random import randint
+from datetime import datetime
 
 from cli import CLI
 from board import Board, BoardError
 from notation import NotationError
 from strategy import Strategy
+
+COMPUTER_MOVE_DEPTH = 2
 
 class GameError(Exception): pass
 
@@ -132,6 +135,94 @@ class Game(object):
         return an, color
 
     def computerMove(self, color):
+        '''Computer makes a move
+           Uses Stragegy Module
+           Returns move as string in standard notation and color
+        '''
+        self.logfp = open('log/computer_move.log', 'a')
+        self.logfp.write('\n%s: %s\n' % (datetime.now(), self.board))
+        
+        piece, position, score = self._computerMove(self.board, color)
+        an = self.board.movePiece(piece, position)
+
+        self.logfp.close()
+        return an, color
+    
+    def _computerMove(self, board, color, iter=0):
+        '''Computer makes a move processing
+           Uses Stragegy Module and recursion
+           Returns score, move, color
+        '''
+        def opposite_color(color):
+            return 'b' if color == 'w' else 'w'
+
+        if iter % 2 == 0:
+            iter_color = color
+            factor = 1
+        else:
+            iter_color =  opposite_color(color)
+            factor = -1
+        self.logfp.write('%siter: %s, iter_color: %s, factor: %s\n' %
+                         ('   '*iter, iter, iter_color, factor))
+            
+        best_piece = None
+        best_piece_move = None
+        best_piece_move_score = None
+
+        for i, piece in enumerate(board.getActivePieces(iter_color)):
+
+            self.logfp.write('%s%s: i=%s: %s, %s\n' %
+                             ('   '*board.index, board.name, i,
+                                      piece, piece.possible_moves))
+            best_move = None
+            best_move_score = None
+
+            for j, new_position in enumerate(piece.possible_moves):
+                self.logfp.write('%s%s: j=%s Try:, %s, %s\n' %
+                                 ('   '*board.index, board.name, j, piece,
+                                  new_position))
+            
+                # build hypothetical board
+                hboard = deepcopy(board)
+                hboard.index += 1 
+                hpiece = hboard.getPieceAt(piece.position)
+                # make the move
+                hboard.movePiece(hpiece, new_position, check_check=0)
+                if iter < COMPUTER_MOVE_DEPTH:
+                    piecex, best_move, best_move_score \
+                        = self._computerMove(hboard, color, iter+1)
+                    best_move = new_position
+                    self.logfp.write('%s%s: j=%s, X: %s, %s, %s\n' %
+                                     ('   '*hboard.index, hboard.name, j,
+                                      piecex, best_move, best_move_score))
+                else:
+                    ma, da, cca = Strategy(hboard).evaluation2()
+                    score = (ma + da + cca)
+                    if j == 0 or score > best_move_score:
+                        best_move = new_position
+                        best_move_score = score
+                    self.logfp.write('%s%s: j=%s, Calc: %s, %s, %s\n' %
+                                     ('   '*hboard.index, hboard.name, j,
+                                      hpiece, new_position, score))
+                del hboard
+                
+            if best_move and best_move_score > best_piece_move_score:
+                best_piece = piece
+                best_piece_move = best_move
+                best_piece_move_score = best_move_score
+                self.logfp.write(
+                    '%s%s: Best: %s, %s, %s\n' % (
+                        '   '*board.index, board.name, piece,
+                        best_move, best_move_score))
+
+        self.logfp.write(
+            '%s%s: return: %s, %s, %s\n' % (
+                '   '*board.index, board.name, best_piece, best_piece_move,
+                best_piece_move_score)) #*factor))
+
+        return best_piece, best_piece_move, best_piece_move_score #*factor
+
+    def computerMove0(self, color):
         '''Computer makes a move
            Uses Stragegy Module
            Returns move as string in standard notation and color

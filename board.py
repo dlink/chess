@@ -76,7 +76,7 @@ class Board(object):
                          module valid options at time of writing are:
                          'standard', 'simple', and 'one_line'
         '''
-        self.name = 'board'
+        self.index = 0
         self.setup_data = setup_data
         self.matrix= [[None for j in range(0, 8)] for i in range(0, 8)]
         self.pieces = []
@@ -96,6 +96,10 @@ class Board(object):
         if game_history:
             self.loadHistory(game_history)
 
+    @property
+    def name(self):
+        return 'board %s' % self.index
+    
     def __repr__(self):
         return self.display.one_line()
 
@@ -470,10 +474,10 @@ class Board(object):
                 y = ky # + yvector
                 for x in range(kx + xvector, px, xvector):
                     y += yvector
-                    print self.name, 'd between:', piece, 'x:', x, 'y:', y
+                    #print self.name, 'd between:', piece, 'x:', x, 'y:', y
                     if self.matrix[y][x] or (y == npy and x == npx):
                         # piece obstructing possible check in this dir.
-                        print 'producted_diagonal'
+                        #print 'producted_diagonal'
                         producted_diagonal = 1
                         break # for x
 
@@ -486,9 +490,9 @@ class Board(object):
                         y += yvector
                         if y >= ymax_board:
                             break # for x
-                        print self.name, 'd beyond', piece, 'x:', x, 'y:', y
+                        #print self.name, 'd beyond', piece, 'x:', x, 'y:', y
                         if y == npy and x == npx:
-                            print 'protected diagonal'
+                            #print 'protected diagonal'
                             producted_diagonal = 1
                             break # for x
                         piece2 = self.matrix[y][x]
@@ -496,10 +500,10 @@ class Board(object):
                             if piece2.color == piece.opposite_color and \
                                piece2.char in ('R', 'Q'):
                                 # in check
-                                print 'd in_check'
+                                #print 'd in_check'
                                 in_check = 1
                             else:
-                                print 'protected diagonal'
+                                #print 'protected diagonal'
                                 producted_diagonal = 1
                             break # for y
 
@@ -528,7 +532,7 @@ class Board(object):
         for position in king.possible_moves:
             in_check = 0
             for op_piece in self.getActivePieces(king.opposite_color):
-                print 'op_piece:', op_piece, op_piece.possible_moves
+                #print 'op_piece:', op_piece, op_piece.possible_moves
                 if position in op_piece.possible_precheck_moves:
                     in_check = 1
                     break

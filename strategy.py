@@ -13,8 +13,9 @@ class Strategy(object):
         o += 'Development Advantage: %s:%s\n' %  (wd, bd)
         o += 'Center Control Advantage: %s:%s' %  (wc, bc)
         return o
-    
+
     def evaluation2(self):
+        # TO DO: add color to params.
         wma, bma = self.materialAdvantage()
         wda, bda, wcca, bcca = self.developmentAndCenterAdvantage()
         return wma-bma, wda-bda, wcca-bcca
