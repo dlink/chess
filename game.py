@@ -38,8 +38,8 @@ class Game(object):
         if white_player not in ('h', 'c'):
             raise GameError("Invalid white_player: '%s'. "
                             "Must be either 'h' or 'c'" % white_player)
-        if white_player not in ('h', 'c'):
-            raise GameError("Invalid white_player: '%s'. "
+        if black_player not in ('h', 'c'):
+            raise GameError("Invalid black_player: '%s'. "
                             "Must be either 'h' or 'c'" % black_player)
         
         self.players = {'w': white_player,
