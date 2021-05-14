@@ -257,6 +257,8 @@ class Board(object):
                (piece.color == 'b' and position[1] == '1'):
                 ind = self.pieces.index(piece)
                 piece = Queen(piece.color)
+                piece.position = position
+                piece.possible_moves = self.possibleMoves(piece)
                 self.pieces[ind] = piece
 
         # place piece
