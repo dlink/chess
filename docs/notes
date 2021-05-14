@@ -1,0 +1,12 @@
+1. rather than 'h', 'c', we should introduce a class Player
+2. rather than 'w', b' we should introduce a class PieceColor
+3. 0-0-0 should change to O-O-O ('Oh's instead of zeros')
+4. If a position is not in a pieces possible_positions, because it has a same color piece in that spot, then if that position gets taken by the opponent, we won't know that it is now a possible spot.
+
+# bug test - king should not be able to take queen
+w:Qf4
+w:Ng5
+w:Kg1
+b:Ke7
+# plan
+1. Qf7 Kxf7

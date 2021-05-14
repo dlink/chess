@@ -1,0 +1,63 @@
+High Level Flow 5/2021
+
+game.py
+-------
+GameCli().run()
+   game = Game(...).__init__()
+      game.players = {'w': 'h', 'b': 'c'}
+      game.board = Board(...)
+      
+         board.py::Board().__init__()
+	 --------
+         board.matrix = [[...], [...], ...]
+	 board.setup()
+	    for ea. piece
+	       create piece
+	       place piece
+	       board.pieces.append(piece)
+	       
+	 board.updatePossibleMoves()
+	    for ea. piece
+	       piece.possible_precheck_moves = ...
+	       piece.possible_moves =  ...
+	           via
+	       board.possibleMoves(piece)
+	          for each piece.move_ops
+                     board._getMoveDestinations(piece, move_op)
+		     
+	       board.purgeCheckMoves(piece)
+                  case1: board.purgeCheckMovesKing(piece)
+		  case2: (much logic here)
+
+        board.display = Display(self)
+	   display.py::Display().__init__()
+	   ----------
+
+        board.notation = Notation(self)
+	   notation.py::Notation().__init__()
+           -----------
+   game.py
+   -------
+   game.play()
+      print game.board.display.display()
+      loop:
+         loop for ea. w + b
+	 
+            move = game.getMove('w')
+	          game.userMove() or game.computerMove()
+	             User input or Use Strategy
+	                game.board.move(an, color)
+		           board.py
+			   --------
+                           board.updatePossibleMoves()
+		     
+   	    game.displayMove(move)
+               print game.board.display.display()
+	       print check(mate) status
+               print game.board.display_history()
+               print Strategy(game.board).evaluation
+	          strategy.py
+	          -----------
+	       
+               if game.board.check_mate[opposite_color]:
+                  game.endGame()
