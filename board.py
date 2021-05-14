@@ -120,7 +120,7 @@ class Board(object):
 
     def loadHistory(self, history):
         game_file = 'data/%s.game' % history
-        history = open(game_file, 'r').read()
+        history = open(game_file, 'r').read().strip()
 
         print 'Running Game history:'
         for i, an in enumerate(history.split(' ')):
@@ -488,7 +488,7 @@ class Board(object):
                         y += yvector
                         if y >= ymax_board:
                             break # for x
-                        print self.name, 'd beyond', piece, 'x:', x, 'y:', y
+                        #print self.name, 'd beyond', piece, 'x:', x, 'y:', y
                         if y == npy and x == npx:
                             print 'protected diagonal'
                             producted_diagonal = 1
@@ -530,7 +530,7 @@ class Board(object):
         for position in king.possible_moves:
             in_check = 0
             for op_piece in self.getActivePieces(king.opposite_color):
-                print 'op_piece:', op_piece, op_piece.possible_moves
+                #print 'op_piece:', op_piece, op_piece.possible_moves
                 if position in op_piece.possible_precheck_moves:
                     in_check = 1
                     break
