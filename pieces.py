@@ -47,6 +47,14 @@ class Piece(object):
         return '%s:%s%s' %(self.color, self.char, self.position)
 
     @property
+    def x(self):
+        return ord(self.position[0])-97
+
+    @property
+    def y(self):
+        return int(self.position[1])-1
+
+    @property
     def opposite_color(self):
         return 'w' if self.color == 'b' else 'b'
 
@@ -60,6 +68,17 @@ class Piece(object):
             return self.glyphs[0]
         else:
             return self.glyphs[1]
+
+    @property
+    def data(self):
+        glyph = self.glyphs[0] if self.color == 'w' else self.glyphs[1]
+        return {'color': self.color,
+                'position': self.position,
+                'x': self.x,
+                'y': self.y,
+                'char': self.char,
+                'glyph': glyph,
+        }
 
 class Pawn(Piece):
     #  d f e
