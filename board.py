@@ -193,6 +193,16 @@ class Board(object):
         piece, position = self.notation.getPieceAndDest(an, color)
         return self.movePiece(piece, position)
 
+    def move2(self, x1, y1, x2, y2):
+        '''Move piece at x1,y1 to position x2, y2
+           Used by API
+        '''
+        start_position = '%s%s' % (chr(x1+97), y1+1)
+        end_position = '%s%s' % (chr(x2+97), y2+1)
+        piece = self.getPieceAt(start_position)
+        move = self.movePiece(piece, end_position)
+        return piece.char, start_position, end_position, move
+
     def movePiece(self, piece, position, check_check=1):
         '''Given a piece object, and a position in standard notation
            Perform the move.
