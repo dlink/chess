@@ -481,10 +481,10 @@ class Board(object):
                 y = ky # + yvector
                 for x in range(kx + xvector, px, xvector):
                     y += yvector
-                    print self.name, 'd between:', piece, 'x:', x, 'y:', y
+                    #print self.name, 'd between:', piece, 'x:', x, 'y:', y
                     if self.matrix[y][x] or (y == npy and x == npx):
                         # piece obstructing possible check in this dir.
-                        print 'producted_diagonal'
+                        #print 'producted_diagonal'
                         producted_diagonal = 1
                         break # for x
 
@@ -499,7 +499,7 @@ class Board(object):
                             break # for x
                         #print self.name, 'd beyond', piece, 'x:', x, 'y:', y
                         if y == npy and x == npx:
-                            print 'protected diagonal'
+                            #print 'protected diagonal'
                             producted_diagonal = 1
                             break # for x
                         piece2 = self.matrix[y][x]
@@ -507,10 +507,10 @@ class Board(object):
                             if piece2.color == piece.opposite_color and \
                                piece2.char in ('R', 'Q'):
                                 # in check
-                                print 'd in_check'
+                                #print 'd in_check'
                                 in_check = 1
                             else:
-                                print 'protected diagonal'
+                                #print 'protected diagonal'
                                 producted_diagonal = 1
                             break # for y
 
