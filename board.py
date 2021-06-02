@@ -197,8 +197,8 @@ class Board(object):
         '''Move piece at x1,y1 to position x2, y2
            Used by API
         '''
-        start_position = '%s%s' % (chr(x1+97), y1+1)
-        end_position = '%s%s' % (chr(x2+97), y2+1)
+        start_position = '%s%s' % (chr(x1+96), y1)
+        end_position = '%s%s' % (chr(x2+96), y2)
         piece = self.getPieceAt(start_position)
         move = self.movePiece(piece, end_position)
         return piece.char, start_position, end_position, move
@@ -216,7 +216,6 @@ class Board(object):
            Returns move as a string in standard notation
         '''
         orig_position = piece.position
-
         capture = 0
         check = 0
         check_mate = 0
