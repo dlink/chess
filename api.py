@@ -32,6 +32,8 @@ class MoveR(Resource):
         except ValueError:
             abort(404, message = "move most be numbers in the form of " \
                   "'x1,y1,x2,y2'")
+
+        print 'MoveR.get(%s, %s, %s, %s)' % (x1, y1, x2, y2)
         try:
             p, s, e, m = self.game.board.move2(x1, y1, x2, y2)
             x = self.game.computerMove('b')
@@ -46,6 +48,7 @@ class MoveR(Resource):
             'end_destination': e,
             'move': m,
         }
+        print 'data:', data
 
         # board pieces
         data = {'pieces': []}

@@ -48,10 +48,14 @@ class Piece(object):
 
     @property
     def x(self):
+        if self.position == 'x':
+            return None
         return ord(self.position[0])-97
 
     @property
     def y(self):
+        if self.position == 'x':
+            return None
         return int(self.position[1])-1
 
     @property
