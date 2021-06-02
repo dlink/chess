@@ -11,7 +11,7 @@ api = Api(app)
 class BoardR(Resource):
     def __init__(self):
         self.game = getGame()
-        
+
     def get(self):
         data = {'pieces': []}
         for piece in self.game.board.pieces:
@@ -38,11 +38,6 @@ class MoveR(Resource):
         except Exception, e: #BoardError, e:
             abort(404, message = str(e))
 
-        data = {'pieces': []}
-        for piece in self.game.board.pieces:
-            data['pieces'].append(piece.data)
-        return data
-
         # testing data only
         data = {
             'move_str': move_str,
@@ -51,12 +46,15 @@ class MoveR(Resource):
             'end_destination': e,
             'move': m,
         }
+
         # board pieces
-        data['pieces'] = []
+        data = {'pieces': []}
         for piece in self.game.board.pieces:
             data['pieces'].append(piece.data)
+
+        print self.game.board.display.display()
         return data
-    
+
 api.add_resource(BoardR, '/board')
 api.add_resource(MoveR, '/move/<move_str>')
 
