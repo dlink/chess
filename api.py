@@ -38,7 +38,8 @@ class MoveR(Resource):
             p, s, e, m = self.game.board.move2(x1, y1, x2, y2)
             x = self.game.computerMove('b')
         except Exception, e: #BoardError, e:
-            abort(404, message = str(e))
+            #abort(404, message = str(e))
+            pass
 
         # testing data only
         data = {
