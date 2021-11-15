@@ -1,0 +1,57 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1348\cocoasubrtf170
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh12180\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs28 \cf0 Rigel Chess\
+\
+Possible Moves Function\
+\
+1. Board::Move\
+\
+  check if move is allowed - piece\
+\
+  disambiguate move for user later in notation  - pieces of same type\
+\
+  check check on opponent - king\
+\
+  check checkmate on opponent - op_pieces\
+\
+2. Board::possibleMoves()\
+\
+  check if move puts self in check - hypo board 1: op_pieces\
+\
+3. Notation: getPieceAndDest()\
+\
+  check move is allowable -pieces of a type\
+\
+4. Game::computerMove()\
+\
+  get all of computers options - all pieces of one player\
+\
+5. Strategy::developmentAndCenterAdvantage()\
+\
+  Get all white pieces\
+\
+  Get all black pieces\
+\
+\
+\
+Flow of events\
+\
+  Board Set up\
+\
+  Display Set up\
+\
+  Run previous histories\
+\
+  play begins\
+\
+      white move\
+\
+      black move\
+\
+\
+\
+}
